@@ -31,3 +31,8 @@ Install dependencies:
 
 ```powershell
 py -3 -m pip install -r requirements.txt
+```
+
+---
+
+Special thanks to [TeamDima](https://github.com/DeTTK) for the original program.
