@@ -1,6 +1,6 @@
 # Stalcraft Waypoint Editor
 
-Map and waypoint editor for **Stalcraft** map.
+Waypoint editor for **Stalcraft** map.
 
 ---
 ## Screenshots
