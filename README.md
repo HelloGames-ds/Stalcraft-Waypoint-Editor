@@ -17,6 +17,14 @@ Map and waypoint editor for **Stalcraft** map.
 
 ---
 
+## Runing
+From the project root:
+```powershell
+py .\PyGUI\main.py
+```
+
+---
+
 ## Installation
 
 Install dependencies:
