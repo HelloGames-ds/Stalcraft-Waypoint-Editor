@@ -20,7 +20,7 @@ Map and waypoint editor for **Stalcraft** map.
 - Create, move, delete, recolor, and rename waypoints
 - Parse images into waypoint markers
 - Layer support
-- Undo / Redo system
+- Undo / Redo
 - EXBO path configuration
 - Simple UI customization
 
