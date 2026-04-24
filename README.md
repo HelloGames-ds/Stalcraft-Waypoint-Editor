@@ -1,6 +1,6 @@
 # Stalcraft Waypoint Editor
 
-Map and waypoint editor for **Stalcraft** zone PNG packs.
+Map and waypoint editor for **Stalcraft** map.
 
 ---
 
