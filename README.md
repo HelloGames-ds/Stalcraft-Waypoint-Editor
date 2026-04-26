@@ -1,9 +1,13 @@
 # Stalcraft Waypoint Editor
 
-Waypoint editor for **Stalcraft** map.
+Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint editing, image-to-marker parsing, and layer support.
+
+This project is focused on local map work: editing `waypoints.cfg`, organizing markers, and placing waypoint shapes from reference images on top of zone PNG packs.
 
 ---
+
 ## Screenshots
+
 <img width="632" height="312" alt="Image" src="https://github.com/user-attachments/assets/1af8c97f-be9f-486a-af7c-c7478d5eebe4" />
 
 <img width="1920" height="1017" alt="Image" src="https://github.com/user-attachments/assets/2f3c2438-d8b4-46f2-9606-9145e15e78a3" />
@@ -12,29 +16,28 @@ Waypoint editor for **Stalcraft** map.
 
 <img width="914" height="849" alt="Image" src="https://github.com/user-attachments/assets/29f151f7-c518-4ce6-8734-3dd3b859ea18" />
 
+---
 
 ## Features
 
 - Load map zones from `assets/maps/zone_pack_png`
+- Enable only the regions you need instead of loading the whole map at once
 - Load and save `waypoints.cfg`
-- Create, move, delete, recolor, and rename waypoints
+- Create, move, delete, rename, recolor, and re-icon waypoints
 - Parse images into waypoint markers
-- Layer support
+- Preview generated markers before parsing
+- Layer support with separate local layer storage
 - Undo / Redo
 - EXBO path configuration
-- Simple UI customization
+- RU / EN interface
+- Basic UI customization
 
 ---
 
-## Runing
-From the project root:
-```powershell
-py .\PyGUI\main.py
-```
+## Requirements
 
----
-
-## Installation
+- Windows
+- Python `3.13` recommended
 
 Install dependencies:
 
@@ -43,5 +46,73 @@ py -3 -m pip install -r requirements.txt
 ```
 
 ---
+
+## Run
+
+From the project root:
+
+```powershell
+py .\PyGUI\main.py
+```
+
+---
+
+## First Launch
+
+On first start the app asks for:
+
+1. Interface language
+2. Path to the `EXBO` folder
+
+Expected folder example:
+
+```text
+C:\Users\<YourUser>\AppData\Roaming\EXBO
+```
+
+The app then looks for:
+
+```text
+<EXBO>\runtime\stalcraft\config\waypoints.cfg
+```
+
+Local runtime files created by the app:
+
+- `app_config.json`
+- `ui_config.json`
+- `layers.json`
+- `backups/`
+
+These files are user-local and should usually stay out of the repository.
+
+---
+
+## Hotkeys
+
+- `H` - hide / show sidebar
+- `Delete` - delete selected waypoint(s) or loaded image
+- `Ctrl+S` - save waypoints to cfg
+- `Ctrl+Z` - undo
+- `Ctrl+Y` - redo
+- `Ctrl+Shift+Z` - redo
+
+---
+
+## Project Structure
+
+- `PyGUI/main.py` - app entry point
+- `PyGUI/desktop_app.py` - main application class
+- `PyGUI/ui_mixin.py` - interface building and theming
+- `PyGUI/image_mixin.py` - image parsing and preview logic
+- `PyGUI/zone_mixin.py` - zone loading and reveal logic
+- `PyGUI/layers_mixin.py` - layer system
+- `PyGUI/i18n.py` - translations
+- `simplemapper_core.py` - cfg IO, asset discovery, and map scanning
+- `assets/maps/zone_pack_png` - zone PNG pack
+- `assets/waypoint_icons` - waypoint icons
+
+---
+
+## Credits
 
 Special thanks to [TeamDima](https://github.com/DeTTK) for the original program.
