@@ -12,6 +12,7 @@ backups/
 
 app_config.json
 ui_config.json
+settings.json
 waypoints.cfg
 layers.json
 

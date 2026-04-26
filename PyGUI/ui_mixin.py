@@ -18,6 +18,62 @@ from app_constants import (
 
 
 class UIBuildMixin:
+    def load_settings_config(self) -> dict:
+        defaults = {
+            "max_markers_on_screen": MAX_MARKERS_ON_SCREEN,
+            "square_render_threshold": SQUARE_RENDER_THRESHOLD,
+        }
+        path = PROJECT_ROOT / "settings.json"
+        if not path.exists():
+            return defaults
+        try:
+            loaded = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return defaults
+        if not isinstance(loaded, dict):
+            return defaults
+        result = dict(defaults)
+        try:
+            result["max_markers_on_screen"] = max(1, int(loaded.get("max_markers_on_screen", defaults["max_markers_on_screen"])))
+        except Exception:
+            pass
+        try:
+            result["square_render_threshold"] = max(1, int(loaded.get("square_render_threshold", defaults["square_render_threshold"])))
+        except Exception:
+            pass
+        return result
+
+    def save_settings_config(self) -> None:
+        path = PROJECT_ROOT / "settings.json"
+        payload = {
+            "max_markers_on_screen": int(self.max_markers_on_screen),
+            "square_render_threshold": int(self.square_render_threshold),
+        }
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def sync_optimization_settings_ui(self) -> None:
+        if dpg.does_item_exist("marker_screen_limit_input"):
+            dpg.set_value("marker_screen_limit_input", int(self.max_markers_on_screen))
+        if dpg.does_item_exist("marker_square_threshold_input"):
+            dpg.set_value("marker_square_threshold_input", int(self.square_render_threshold))
+
+    def reset_optimization_to_defaults(self, sender=None, app_data=None, user_data=None) -> None:
+        self.max_markers_on_screen = MAX_MARKERS_ON_SCREEN
+        self.square_render_threshold = SQUARE_RENDER_THRESHOLD
+        self.settings_config["max_markers_on_screen"] = int(self.max_markers_on_screen)
+        self.settings_config["square_render_threshold"] = int(self.square_render_threshold)
+        self.save_settings_config()
+        self.sync_optimization_settings_ui()
+        self.overlay_cache_key = None
+        self.needs_redraw = True
+        self.set_status(
+            self.t(
+                "status_optimization_reset",
+                screen=self.max_markers_on_screen,
+                squares=self.square_render_threshold,
+            )
+        )
+
     def on_linked_int_control_changed(self, sender=None, app_data=None, user_data=None) -> None:
         if not isinstance(user_data, dict):
             return
@@ -225,6 +281,7 @@ class UIBuildMixin:
             "apply_exbo_path_button": self.t("apply_exbo_path"),
             "language_apply_button": self.t("language_apply"),
             "apply_optimization_button": self.t("apply_optimization"),
+            "reset_optimization_button": self.t("reset_optimization_defaults"),
             "save_ui_config_button": self.t("save_ui_config"),
             "add_selected_to_layer_button": self.t("add_selected_to_layer"),
             "onboarding_browse_button": self.t("browse"),
@@ -309,6 +366,7 @@ class UIBuildMixin:
         self.refresh_layers_list()
         self.refresh_exbo_settings_ui()
         self.refresh_language_settings_ui()
+        self.sync_optimization_settings_ui()
         if hasattr(dpg, "set_viewport_title"):
             dpg.set_viewport_title(self.t("app_title"))
         if dpg.does_item_exist("onboarding_modal") and dpg.is_item_shown("onboarding_modal"):
@@ -769,6 +827,7 @@ class UIBuildMixin:
                         width=-1,
                     )
                     dpg.add_button(label=self.t("apply_optimization"), tag="apply_optimization_button", width=-1, callback=self.on_apply_optimization_clicked)
+                    dpg.add_button(label=self.t("reset_optimization_defaults"), tag="reset_optimization_button", width=-1, callback=self.reset_optimization_to_defaults)
 
             with dpg.collapsing_header(label=self.t("section_ui"), default_open=False, tag="header_ui"):
                 with self.subsection_header(label=self.t("section_layout"), default_open=True, indent=18, tag="header_layout"):

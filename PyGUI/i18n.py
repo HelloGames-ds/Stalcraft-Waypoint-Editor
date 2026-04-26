@@ -203,6 +203,16 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
 }
 
 
+TRANSLATIONS["reset_optimization_defaults"] = {
+    "ru": "Сбросить оптимизацию к дефолту",
+    "en": "Reset optimization to defaults",
+}
+TRANSLATIONS["status_optimization_reset"] = {
+    "ru": "Оптимизация сброшена: screen {screen}, squares after {squares}",
+    "en": "Optimization reset: screen {screen}, squares after {squares}",
+}
+
+
 def translate(language: str, key: str, **kwargs) -> str:
     entry = TRANSLATIONS.get(key)
     if entry is None:

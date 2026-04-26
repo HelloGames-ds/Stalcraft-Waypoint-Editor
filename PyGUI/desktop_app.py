@@ -56,6 +56,7 @@ class SimpleMapperDesktopApp(
         self.language_setup_required = self.core.requires_language_setup()
         self.language = "en" if self.language_setup_required else self.core.get_language()
         self.ui_config = self.load_ui_config()
+        self.settings_config = self.load_settings_config()
         self.active_map_id: str | None = None
         self.active_map = None
         self.tile_size = 512
@@ -83,8 +84,8 @@ class SimpleMapperDesktopApp(
         self.camera_y = 0.0
         self.tile_margin_chunks = VISIBLE_TILE_MARGIN
         self.marker_margin_chunks = MARKER_TILE_MARGIN
-        self.max_markers_on_screen = MAX_MARKERS_ON_SCREEN
-        self.square_render_threshold = SQUARE_RENDER_THRESHOLD
+        self.max_markers_on_screen = int(self.settings_config["max_markers_on_screen"])
+        self.square_render_threshold = int(self.settings_config["square_render_threshold"])
         self.max_tile_textures = MAX_TILE_TEXTURES
         self.effective_tile_cache_limit = self.max_tile_textures
         self.pending_fit = False

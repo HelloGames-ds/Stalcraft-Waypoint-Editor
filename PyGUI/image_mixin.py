@@ -423,6 +423,10 @@ class ImageGenerationMixin:
     def apply_optimization_settings(self) -> None:
         self.max_markers_on_screen = max(1, int(dpg.get_value("marker_screen_limit_input")))
         self.square_render_threshold = max(1, int(dpg.get_value("marker_square_threshold_input")))
+        self.settings_config["max_markers_on_screen"] = int(self.max_markers_on_screen)
+        self.settings_config["square_render_threshold"] = int(self.square_render_threshold)
+        self.save_settings_config()
+        self.sync_optimization_settings_ui()
         self.overlay_cache_key = None
         self.needs_redraw = True
         self.set_status(
