@@ -8,9 +8,16 @@ import dearpygui.dearpygui as dpg
 
 from app_constants import (
     DEFAULT_ALPHA_CUTOFF,
+    DEFAULT_IMAGE_BLUR_RADIUS,
+    DEFAULT_IMAGE_CONTRAST,
+    DEFAULT_IMAGE_MASK_GROW_SHRINK,
+    DEFAULT_IMAGE_NOISE_CLEANUP,
     DEFAULT_BRIGHTNESS_CUTOFF,
+    DEFAULT_CONTOUR_EDGE_THRESHOLD,
     DEFAULT_CONTOUR_THICKNESS,
+    DEFAULT_MAP_ZOOM_MULTIPLIER,
     DEFAULT_MAX_GENERATED_MARKERS,
+    DEFAULT_MARKER_ZOOM_MULTIPLIER,
     MAX_MARKERS_ON_SCREEN,
     PROJECT_ROOT,
     SQUARE_RENDER_THRESHOLD,
@@ -22,6 +29,8 @@ class UIBuildMixin:
         defaults = {
             "max_markers_on_screen": MAX_MARKERS_ON_SCREEN,
             "square_render_threshold": SQUARE_RENDER_THRESHOLD,
+            "map_zoom_multiplier": DEFAULT_MAP_ZOOM_MULTIPLIER,
+            "marker_zoom_multiplier": DEFAULT_MARKER_ZOOM_MULTIPLIER,
         }
         path = PROJECT_ROOT / "settings.json"
         if not path.exists():
@@ -41,6 +50,14 @@ class UIBuildMixin:
             result["square_render_threshold"] = max(1, int(loaded.get("square_render_threshold", defaults["square_render_threshold"])))
         except Exception:
             pass
+        try:
+            result["map_zoom_multiplier"] = max(0.2, min(4.0, float(loaded.get("map_zoom_multiplier", defaults["map_zoom_multiplier"]))))
+        except Exception:
+            pass
+        try:
+            result["marker_zoom_multiplier"] = max(0.2, min(6.0, float(loaded.get("marker_zoom_multiplier", defaults["marker_zoom_multiplier"]))))
+        except Exception:
+            pass
         return result
 
     def save_settings_config(self) -> None:
@@ -48,6 +65,8 @@ class UIBuildMixin:
         payload = {
             "max_markers_on_screen": int(self.max_markers_on_screen),
             "square_render_threshold": int(self.square_render_threshold),
+            "map_zoom_multiplier": float(self.map_zoom_multiplier),
+            "marker_zoom_multiplier": float(self.marker_zoom_multiplier),
         }
         path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -56,6 +75,64 @@ class UIBuildMixin:
             dpg.set_value("marker_screen_limit_input", int(self.max_markers_on_screen))
         if dpg.does_item_exist("marker_square_threshold_input"):
             dpg.set_value("marker_square_threshold_input", int(self.square_render_threshold))
+
+    def sync_view_calibration_ui(self) -> None:
+        if dpg.does_item_exist("map_zoom_multiplier_slider"):
+            dpg.set_value("map_zoom_multiplier_slider", float(self.map_zoom_multiplier))
+        if dpg.does_item_exist("map_zoom_multiplier_input"):
+            dpg.set_value("map_zoom_multiplier_input", float(self.map_zoom_multiplier))
+        if dpg.does_item_exist("marker_zoom_multiplier_slider"):
+            dpg.set_value("marker_zoom_multiplier_slider", float(self.marker_zoom_multiplier))
+        if dpg.does_item_exist("marker_zoom_multiplier_input"):
+            dpg.set_value("marker_zoom_multiplier_input", float(self.marker_zoom_multiplier))
+
+    def write_ui_config_file(self) -> None:
+        path = PROJECT_ROOT / "ui_config.json"
+        path.write_text(json.dumps(self.ui_config, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def apply_sidebar_width(self, width: float | int, persist: bool = False) -> None:
+        self.ui_config["sidebar_width"] = max(260, min(700, int(round(width))))
+        if dpg.does_item_exist("sidebar"):
+            dpg.configure_item("sidebar", width=int(self.ui_config["sidebar_width"]))
+        if dpg.does_item_exist("ui_sidebar_width_input"):
+            current = int(dpg.get_value("ui_sidebar_width_input"))
+            if current != int(self.ui_config["sidebar_width"]):
+                dpg.set_value("ui_sidebar_width_input", int(self.ui_config["sidebar_width"]))
+        if persist:
+            self.write_ui_config_file()
+        self.needs_redraw = True
+
+    def get_image_parser_mode_options(self) -> list[str]:
+        return [
+            self.t("parser_mode_fill"),
+            self.t("parser_mode_silhouette"),
+            self.t("parser_mode_detail_edges"),
+        ]
+
+    def get_image_parser_mode_label(self, mode: str | None = None) -> str:
+        mode_key = mode or getattr(self, "image_parser_mode", "fill")
+        mode_map = {
+            "fill": self.t("parser_mode_fill"),
+            "silhouette": self.t("parser_mode_silhouette"),
+            "detail_edges": self.t("parser_mode_detail_edges"),
+        }
+        return mode_map.get(mode_key, mode_map["fill"])
+
+    def refresh_image_parser_mode_ui(self) -> None:
+        if not dpg.does_item_exist("image_parser_mode_combo"):
+            return
+        dpg.configure_item("image_parser_mode_combo", items=self.get_image_parser_mode_options())
+        dpg.set_value("image_parser_mode_combo", self.get_image_parser_mode_label())
+
+    def apply_image_parser_mode_from_ui(self, sender=None, app_data=None, user_data=None) -> None:
+        label = str(app_data if app_data is not None else dpg.get_value("image_parser_mode_combo"))
+        reverse_map = {
+            self.t("parser_mode_fill"): "fill",
+            self.t("parser_mode_silhouette"): "silhouette",
+            self.t("parser_mode_detail_edges"): "detail_edges",
+        }
+        self.image_parser_mode = reverse_map.get(label, "fill")
+        self.on_image_settings_changed(sender, app_data, user_data)
 
     def reset_optimization_to_defaults(self, sender=None, app_data=None, user_data=None) -> None:
         self.max_markers_on_screen = MAX_MARKERS_ON_SCREEN
@@ -71,6 +148,33 @@ class UIBuildMixin:
                 "status_optimization_reset",
                 screen=self.max_markers_on_screen,
                 squares=self.square_render_threshold,
+            )
+        )
+
+    def apply_view_calibration_settings(self, sender=None, app_data=None, user_data=None) -> None:
+        old_map_zoom = max(0.01, float(self.map_zoom_multiplier))
+        self.map_zoom_multiplier = max(
+            0.2,
+            min(4.0, float(dpg.get_value("map_zoom_multiplier_input"))),
+        )
+        self.marker_zoom_multiplier = max(
+            0.2,
+            min(6.0, float(dpg.get_value("marker_zoom_multiplier_input"))),
+        )
+        self.settings_config["map_zoom_multiplier"] = float(self.map_zoom_multiplier)
+        self.settings_config["marker_zoom_multiplier"] = float(self.marker_zoom_multiplier)
+        self.save_settings_config()
+        self.sync_view_calibration_ui()
+        self.scale = self.clamp_map_scale(self.scale * (self.map_zoom_multiplier / old_map_zoom))
+        self.overlay_cache_key = None
+        self.needs_redraw = True
+        if dpg.does_item_exist("zoom_text"):
+            dpg.set_value("zoom_text", self.t("zoom_label", scale=self.scale))
+        self.set_status(
+            self.t(
+                "status_view_calibration_applied",
+                map_zoom=self.map_zoom_multiplier,
+                marker_zoom=self.marker_zoom_multiplier,
             )
         )
 
@@ -256,17 +360,18 @@ class UIBuildMixin:
             "header_source": self.t("section_source"),
             "header_parsing": self.t("section_parsing"),
             "header_contour": self.t("section_contour"),
+            "header_parser_advanced": self.t("section_parser_advanced"),
             "header_layer_editor": self.t("section_layer_editor"),
             "header_exbo_cfg": self.t("section_exbo_cfg"),
             "header_language": self.t("section_language"),
             "header_optimization": self.t("section_optimization"),
+            "header_view_calibration": self.t("section_view_calibration"),
             "header_ui": self.t("section_ui"),
             "header_layout": self.t("section_layout"),
             "header_marker_preview": self.t("section_marker_preview"),
             "header_colors": self.t("section_colors"),
             "header_controls": self.t("section_controls"),
             "header_notes": self.t("section_notes"),
-            "header_status": self.t("section_status"),
             "fit_to_map_button": self.t("fit_to_map"),
             "enable_all_regions_button": self.t("enable_all_regions"),
             "disable_all_regions_button": self.t("disable_all_regions"),
@@ -282,6 +387,7 @@ class UIBuildMixin:
             "language_apply_button": self.t("language_apply"),
             "apply_optimization_button": self.t("apply_optimization"),
             "reset_optimization_button": self.t("reset_optimization_defaults"),
+            "apply_view_calibration_button": self.t("apply_view_calibration"),
             "save_ui_config_button": self.t("save_ui_config"),
             "add_selected_to_layer_button": self.t("add_selected_to_layer"),
             "onboarding_browse_button": self.t("browse"),
@@ -293,13 +399,24 @@ class UIBuildMixin:
 
         value_updates = {
             "app_title_text": self.t("app_title"),
-            "app_subtitle_text": self.t("app_subtitle"),
             "map_section_title_text": self.t("section_map"),
             "regions_hint_text": self.t("regions_hint"),
             "source_title_text": self.t("image_to_markers"),
             "image_preview_hint_text": self.t("image_preview_hint"),
             "image_max_markers_label": self.t("max_markers"),
+            "image_parser_mode_label": self.t("parser_mode"),
+            "image_alpha_cutoff_label": self.t("alpha_cutoff"),
+            "image_sampling_step_label": self.t("sampling_grid_step"),
             "image_parsing_icon_label": self.t("field_icon"),
+            "image_brightness_cutoff_label": self.t("brightness_cutoff"),
+            "image_contour_thickness_label": self.t("contour_thickness"),
+            "image_contrast_label": self.t("image_contrast"),
+            "image_blur_radius_label": self.t("image_blur_radius"),
+            "image_mask_grow_shrink_label": self.t("image_mask_grow_shrink"),
+            "image_noise_cleanup_label": self.t("image_noise_cleanup"),
+            "image_contour_edge_threshold_label": self.t("image_contour_edge_threshold"),
+            "image_contour_help_text": self.t("contour_only_hint"),
+            "image_parser_advanced_hint_text": self.t("image_parser_advanced_hint"),
             "layer_editor_title_text": self.t("layer_editor_title"),
             "layer_hint_text": self.t("layer_hint"),
             "exbo_folder_label": self.t("exbo_folder"),
@@ -311,6 +428,8 @@ class UIBuildMixin:
             "language_restart_note_text": self.t("language_restart_note"),
             "optimization_markers_label": self.t("markers_on_screen"),
             "optimization_squares_label": self.t("squares_after"),
+            "map_zoom_multiplier_label": self.t("map_zoom_multiplier"),
+            "marker_zoom_multiplier_label": self.t("marker_zoom_multiplier"),
             "ui_sidebar_width_label": self.t("sidebar_width"),
             "ui_rounding_label": self.t("rounding"),
             "ui_preview_alpha_label": self.t("preview_alpha"),
@@ -366,7 +485,9 @@ class UIBuildMixin:
         self.refresh_layers_list()
         self.refresh_exbo_settings_ui()
         self.refresh_language_settings_ui()
+        self.refresh_image_parser_mode_ui()
         self.sync_optimization_settings_ui()
+        self.sync_view_calibration_ui()
         if hasattr(dpg, "set_viewport_title"):
             dpg.set_viewport_title(self.t("app_title"))
         if dpg.does_item_exist("onboarding_modal") and dpg.is_item_shown("onboarding_modal"):
@@ -556,10 +677,9 @@ class UIBuildMixin:
         )
 
     def save_ui_config(self) -> None:
-        path = PROJECT_ROOT / "ui_config.json"
         self.ui_config = self.get_ui_config_from_widgets()
-        path.write_text(json.dumps(self.ui_config, ensure_ascii=False, indent=2), encoding="utf-8")
-        self.set_status(self.t("status_ui_config_saved", name=path.name))
+        self.write_ui_config_file()
+        self.set_status(self.t("status_ui_config_saved", name="ui_config.json"))
 
     def apply_ui_theme(self) -> None:
         self.ui_config = self.get_ui_config_from_widgets()
@@ -706,16 +826,14 @@ class UIBuildMixin:
                 dpg.add_text(self.t("image_preview_hint"), tag="image_preview_hint_text", wrap=320)
 
             with dpg.collapsing_header(label=self.t("section_parsing"), default_open=True, tag="header_parsing"):
-                dpg.add_text(self.t("max_markers"), tag="image_max_markers_label")
-                dpg.add_input_int(
-                    tag="image_marker_limit_input",
-                    default_value=DEFAULT_MAX_GENERATED_MARKERS,
-                    min_value=1,
-                    min_clamped=True,
+                dpg.add_text(self.t("parser_mode"), tag="image_parser_mode_label")
+                dpg.add_combo(
+                    items=self.get_image_parser_mode_options(),
+                    tag="image_parser_mode_combo",
                     width=-1,
-                    callback=self.on_image_settings_changed,
+                    default_value=self.get_image_parser_mode_label(),
+                    callback=self.apply_image_parser_mode_from_ui,
                 )
-                dpg.add_text(self.t("estimated_markers_empty"), tag="image_marker_estimate_text")
                 dpg.add_checkbox(
                     label=self.t("include_background"),
                     tag="image_include_background_input",
@@ -732,46 +850,101 @@ class UIBuildMixin:
                     callback=self.on_image_settings_changed,
                 )
                 dpg.add_text(self.t("sampling_grid_step"), tag="image_sampling_step_label")
-                dpg.add_input_int(
-                    tag="image_sampling_step_input",
+                self.add_linked_int_control(
+                    slider_tag="image_sampling_step_slider",
+                    input_tag="image_sampling_step_input",
                     default_value=1,
+                    min_value=1,
+                    max_value=32,
+                    callback=self.on_image_settings_changed,
+                )
+                dpg.add_text(self.t("max_markers"), tag="image_max_markers_label")
+                dpg.add_input_int(
+                    tag="image_marker_limit_input",
+                    default_value=DEFAULT_MAX_GENERATED_MARKERS,
                     min_value=1,
                     min_clamped=True,
                     width=-1,
                     callback=self.on_image_settings_changed,
                 )
-                dpg.add_checkbox(
-                    label=self.t("contour_only"),
-                    tag="image_contour_only_input",
-                    default_value=False,
-                    callback=self.on_image_settings_changed,
-                )
+                dpg.add_text(self.t("estimated_markers_empty"), tag="image_marker_estimate_text")
+
+                with dpg.collapsing_header(label=self.t("section_contour"), default_open=False, tag="header_contour"):
+                    dpg.add_text(self.t("brightness_cutoff"), tag="image_brightness_cutoff_label")
+                    self.add_linked_int_control(
+                        slider_tag="image_brightness_cutoff_slider",
+                        input_tag="image_brightness_cutoff_input",
+                        default_value=DEFAULT_BRIGHTNESS_CUTOFF,
+                        min_value=0,
+                        max_value=255,
+                        callback=self.on_image_settings_changed,
+                    )
+                    dpg.add_text(self.t("contour_thickness"), tag="image_contour_thickness_label")
+                    self.add_linked_int_control(
+                        slider_tag="image_contour_thickness_slider",
+                        input_tag="image_contour_thickness_input",
+                        default_value=DEFAULT_CONTOUR_THICKNESS,
+                        min_value=1,
+                        max_value=8,
+                        callback=self.on_image_settings_changed,
+                    )
+                    dpg.add_text(self.t("image_contour_edge_threshold"), tag="image_contour_edge_threshold_label")
+                    self.add_linked_int_control(
+                        slider_tag="image_contour_edge_threshold_slider",
+                        input_tag="image_contour_edge_threshold_input",
+                        default_value=DEFAULT_CONTOUR_EDGE_THRESHOLD,
+                        min_value=0,
+                        max_value=255,
+                        callback=self.on_image_settings_changed,
+                    )
+                    dpg.add_text(self.t("contour_only_hint"), tag="image_contour_help_text", wrap=320)
+
+                with dpg.collapsing_header(label=self.t("section_parser_advanced"), default_open=False, tag="header_parser_advanced"):
+                    dpg.add_text(self.t("image_contrast"), tag="image_contrast_label")
+                    self.add_linked_float_control(
+                        slider_tag="image_contrast_slider",
+                        input_tag="image_contrast_input",
+                        default_value=DEFAULT_IMAGE_CONTRAST,
+                        min_value=0.2,
+                        max_value=3.0,
+                        callback=self.on_image_settings_changed,
+                        format="%.2f",
+                    )
+                    dpg.add_text(self.t("image_blur_radius"), tag="image_blur_radius_label")
+                    self.add_linked_float_control(
+                        slider_tag="image_blur_radius_slider",
+                        input_tag="image_blur_radius_input",
+                        default_value=DEFAULT_IMAGE_BLUR_RADIUS,
+                        min_value=0.0,
+                        max_value=4.0,
+                        callback=self.on_image_settings_changed,
+                        format="%.2f",
+                    )
+                    dpg.add_text(self.t("image_mask_grow_shrink"), tag="image_mask_grow_shrink_label")
+                    self.add_linked_int_control(
+                        slider_tag="image_mask_grow_shrink_slider",
+                        input_tag="image_mask_grow_shrink_input",
+                        default_value=DEFAULT_IMAGE_MASK_GROW_SHRINK,
+                        min_value=-6,
+                        max_value=6,
+                        callback=self.on_image_settings_changed,
+                    )
+                    dpg.add_text(self.t("image_noise_cleanup"), tag="image_noise_cleanup_label")
+                    self.add_linked_int_control(
+                        slider_tag="image_noise_cleanup_slider",
+                        input_tag="image_noise_cleanup_input",
+                        default_value=DEFAULT_IMAGE_NOISE_CLEANUP,
+                        min_value=0,
+                        max_value=8,
+                        callback=self.on_image_settings_changed,
+                    )
+                    dpg.add_text(self.t("image_parser_advanced_hint"), tag="image_parser_advanced_hint_text", wrap=320)
+
                 dpg.add_text(self.t("field_icon"), tag="image_parsing_icon_label")
                 dpg.add_input_int(tag="image_icon_input", default_value=0, min_value=0, min_clamped=True, width=-1)
                 dpg.add_checkbox(label=self.t("auto_icons"), tag="image_auto_icons_input", default_value=True)
                 dpg.add_button(label=self.t("parse_image"), tag="parse_image_button", width=-1, callback=self.on_generate_image_clicked)
                 dpg.add_text(self.t("generated_buffer_empty"), tag="generated_status", wrap=320)
-
-            with dpg.collapsing_header(label=self.t("section_contour"), default_open=False, tag="header_contour"):
-                dpg.add_text(self.t("brightness_cutoff"), tag="image_brightness_cutoff_label")
-                self.add_linked_int_control(
-                    slider_tag="image_brightness_cutoff_slider",
-                    input_tag="image_brightness_cutoff_input",
-                    default_value=DEFAULT_BRIGHTNESS_CUTOFF,
-                    min_value=0,
-                    max_value=255,
-                    callback=self.on_image_settings_changed,
-                )
-                dpg.add_text(self.t("contour_thickness"), tag="image_contour_thickness_label")
-                self.add_linked_int_control(
-                    slider_tag="image_contour_thickness_slider",
-                    input_tag="image_contour_thickness_input",
-                    default_value=DEFAULT_CONTOUR_THICKNESS,
-                    min_value=1,
-                    max_value=8,
-                    callback=self.on_image_settings_changed,
-                )
-                dpg.add_text(self.t("contour_only_hint"), tag="image_contour_help_text", wrap=320)
 
     def build_layers_tab(self) -> None:
         with dpg.tab(label=self.t("tab_layers"), tag="tab_layers"):
@@ -828,6 +1001,35 @@ class UIBuildMixin:
                     )
                     dpg.add_button(label=self.t("apply_optimization"), tag="apply_optimization_button", width=-1, callback=self.on_apply_optimization_clicked)
                     dpg.add_button(label=self.t("reset_optimization_defaults"), tag="reset_optimization_button", width=-1, callback=self.reset_optimization_to_defaults)
+
+            with dpg.collapsing_header(label=self.t("section_view_calibration"), default_open=False, tag="header_view_calibration"):
+                with self.subsection_panel():
+                    dpg.add_text(self.t("map_zoom_multiplier"), tag="map_zoom_multiplier_label")
+                    self.add_linked_float_control(
+                        slider_tag="map_zoom_multiplier_slider",
+                        input_tag="map_zoom_multiplier_input",
+                        default_value=float(self.map_zoom_multiplier),
+                        min_value=0.4,
+                        max_value=2.5,
+                        callback=lambda *_: None,
+                        format="%.2f",
+                    )
+                    dpg.add_text(self.t("marker_zoom_multiplier"), tag="marker_zoom_multiplier_label")
+                    self.add_linked_float_control(
+                        slider_tag="marker_zoom_multiplier_slider",
+                        input_tag="marker_zoom_multiplier_input",
+                        default_value=float(self.marker_zoom_multiplier),
+                        min_value=0.4,
+                        max_value=4.0,
+                        callback=lambda *_: None,
+                        format="%.2f",
+                    )
+                    dpg.add_button(
+                        label=self.t("apply_view_calibration"),
+                        tag="apply_view_calibration_button",
+                        width=-1,
+                        callback=self.apply_view_calibration_settings,
+                    )
 
             with dpg.collapsing_header(label=self.t("section_ui"), default_open=False, tag="header_ui"):
                 with self.subsection_header(label=self.t("section_layout"), default_open=True, indent=18, tag="header_layout"):
@@ -949,20 +1151,32 @@ class UIBuildMixin:
             with dpg.group(horizontal=True):
                 with dpg.child_window(tag="sidebar", width=int(self.ui_config["sidebar_width"]), border=True):
                     dpg.add_text(self.t("app_title"), tag="app_title_text", color=(245, 245, 245))
-                    dpg.add_text(self.t("app_subtitle"), tag="app_subtitle_text", color=(150, 195, 255))
                     dpg.add_spacer(height=6)
+                    with dpg.child_window(
+                        tag="sidebar_content",
+                        height=-108,
+                        border=False,
+                    ):
+                        with dpg.tab_bar(tag="sidebar_tabs"):
+                            self.build_main_tab()
+                            self.build_image_tab()
+                            self.build_layers_tab()
+                            self.build_settings_tab()
+                            self.build_help_tab()
 
-                    with dpg.tab_bar(tag="sidebar_tabs"):
-                        self.build_main_tab()
-                        self.build_image_tab()
-                        self.build_layers_tab()
-                        self.build_settings_tab()
-                        self.build_help_tab()
-
-                    with dpg.collapsing_header(label=self.t("section_status"), default_open=True, tag="header_status"):
+                    dpg.add_separator()
+                    with dpg.child_window(
+                        tag="sidebar_footer",
+                        height=78,
+                        border=False,
+                        no_scrollbar=True,
+                    ):
                         dpg.add_text(self.t("status_ready"), tag="status_text", wrap=320)
                         dpg.add_text(self.t("progress_zero"), tag="progress_text", wrap=320)
                         dpg.add_text(self.t("zoom_label", scale=1.0), tag="zoom_text")
+
+                with dpg.child_window(tag="sidebar_resize_grip", width=10, border=False, no_scrollbar=True):
+                    dpg.add_spacer(height=1)
 
                 with dpg.child_window(tag="viewer_panel", width=-1, height=-1, border=False, no_scrollbar=True):
                     with dpg.drawlist(tag="map_drawlist", width=100, height=100):

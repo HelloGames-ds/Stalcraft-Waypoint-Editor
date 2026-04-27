@@ -213,6 +213,72 @@ TRANSLATIONS["status_optimization_reset"] = {
 }
 
 
+TRANSLATIONS["section_parser_advanced"] = {
+    "ru": "Тонкая настройка парсера",
+    "en": "Advanced parser tuning",
+}
+TRANSLATIONS["section_view_calibration"] = {
+    "ru": "Калибровка зума",
+    "en": "Zoom calibration",
+}
+TRANSLATIONS["image_contrast"] = {
+    "ru": "Контраст маски",
+    "en": "Mask contrast",
+}
+TRANSLATIONS["image_blur_radius"] = {
+    "ru": "Размытие перед парсингом",
+    "en": "Pre-parse blur",
+}
+TRANSLATIONS["image_mask_grow_shrink"] = {
+    "ru": "Расширить / сжать маску",
+    "en": "Grow / shrink mask",
+}
+TRANSLATIONS["image_noise_cleanup"] = {
+    "ru": "Очистка шума",
+    "en": "Noise cleanup",
+}
+TRANSLATIONS["image_contour_edge_threshold"] = {
+    "ru": "Порог контура",
+    "en": "Contour threshold",
+}
+TRANSLATIONS["image_parser_advanced_hint"] = {
+    "ru": "Контраст и blur влияют на форму маски, очистка шума убирает случайные точки, grow/shrink позволяет тонко расширять или сжимать результат.",
+    "en": "Contrast and blur affect mask shape, noise cleanup removes stray dots, and grow/shrink lets you finely expand or shrink the result.",
+}
+TRANSLATIONS["map_zoom_multiplier"] = {
+    "ru": "Зум карты под игру",
+    "en": "Map zoom match",
+}
+TRANSLATIONS["marker_zoom_multiplier"] = {
+    "ru": "Зум маркеров",
+    "en": "Marker zoom scale",
+}
+TRANSLATIONS["apply_view_calibration"] = {
+    "ru": "Применить калибровку зума",
+    "en": "Apply zoom calibration",
+}
+TRANSLATIONS["status_view_calibration_applied"] = {
+    "ru": "Калибровка зума применена: map {map_zoom:.2f}, markers {marker_zoom:.2f}",
+    "en": "Zoom calibration applied: map {map_zoom:.2f}, markers {marker_zoom:.2f}",
+}
+
+TRANSLATIONS["parser_mode"] = {
+    "ru": "Режим парсинга",
+    "en": "Parser mode",
+}
+TRANSLATIONS["parser_mode_fill"] = {
+    "ru": "Заливка по маске",
+    "en": "Mask fill",
+}
+TRANSLATIONS["parser_mode_silhouette"] = {
+    "ru": "Контур силуэта",
+    "en": "Silhouette contour",
+}
+TRANSLATIONS["parser_mode_detail_edges"] = {
+    "ru": "Контур деталей",
+    "en": "Detail edges",
+}
+
 def translate(language: str, key: str, **kwargs) -> str:
     entry = TRANSLATIONS.get(key)
     if entry is None:

@@ -16,6 +16,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from app_constants import (
+    DEFAULT_MAP_ZOOM_MULTIPLIER,
+    DEFAULT_MARKER_ZOOM_MULTIPLIER,
     INITIAL_ZOOM,
     INTERACTION_GRACE_FRAMES,
     INTERACTION_POINT_BUDGET,
@@ -79,7 +81,9 @@ class SimpleMapperDesktopApp(
         self.overlay_selected_screen: tuple[float, float] | None = None
         self.image_path: str = ""
         self.selected_waypoint_id: int | None = None
-        self.scale = INITIAL_ZOOM
+        self.map_zoom_multiplier = float(self.settings_config.get("map_zoom_multiplier", DEFAULT_MAP_ZOOM_MULTIPLIER))
+        self.marker_zoom_multiplier = float(self.settings_config.get("marker_zoom_multiplier", DEFAULT_MARKER_ZOOM_MULTIPLIER))
+        self.scale = self.clamp_map_scale(INITIAL_ZOOM * self.map_zoom_multiplier)
         self.camera_x = 0.0
         self.camera_y = 0.0
         self.tile_margin_chunks = VISIBLE_TILE_MARGIN
@@ -129,16 +133,28 @@ class SimpleMapperDesktopApp(
         self.marker_layers: dict[str, set[tuple[str, int]]] = {}
         self.layer_visibility: dict[str, bool] = {}
         self.layer_counter = 1
+        self.image_parser_mode = "fill"
         self.ui_theme_tag = "runtime_ui_theme"
         self.ui_subsection_theme_tag = "runtime_ui_subsection_theme"
         self.ui_subsection_header_theme_tag = "runtime_ui_subsection_header_theme"
         self.sidebar_visible = True
+        self.sidebar_resize_active = False
         self.exbo_setup_required = self.core.requires_exbo_setup()
         self.pending_exbo_setup_modal = False
         self.selected_waypoint_name_mixed = False
 
     def t(self, key: str, **kwargs) -> str:
         return translate(self.language, key, **kwargs)
+
+    def clamp_map_scale(self, scale: float) -> float:
+        min_scale = 0.05 * max(0.2, float(self.map_zoom_multiplier))
+        max_scale = 8.0 * max(0.5, float(self.map_zoom_multiplier))
+        return max(min_scale, min(scale, max_scale))
+
+    def get_waypoint_marker_size(self, icon_width: float) -> float:
+        marker_zoom = max(0.2, float(self.marker_zoom_multiplier))
+        zoom_factor = 0.68 + min(max(self.scale, 0.05), 2.25) * 0.72
+        return max(12.0, min(icon_width * 4.25, icon_width * zoom_factor * marker_zoom))
 
     def setup_fonts(self) -> None:
         font_candidates = [
@@ -411,7 +427,7 @@ class SimpleMapperDesktopApp(
         map_h = (max_tz - min_tz + 1) * self.tile_size
         self.camera_x = (min_tx - self.active_map.min_x) * self.tile_size + map_w / 2.0
         self.camera_y = (min_tz - self.active_map.min_z) * self.tile_size + map_h / 2.0
-        self.scale = INITIAL_ZOOM
+        self.scale = self.clamp_map_scale(INITIAL_ZOOM * self.map_zoom_multiplier)
         self.pending_fit = False
         self.needs_redraw = True
         self.selected_waypoint_id = None
@@ -428,7 +444,7 @@ class SimpleMapperDesktopApp(
         if dpg.does_item_exist("map_name_text"):
             dpg.set_value("map_name_text", map_info.map_id)
         if dpg.does_item_exist("zoom_text"):
-            dpg.set_value("zoom_text", f"Zoom: {self.scale:.3f}x")
+            dpg.set_value("zoom_text", self.t("zoom_label", scale=self.scale))
 
     def fit_to_map(self) -> None:
         if self.active_map is None:
@@ -445,7 +461,7 @@ class SimpleMapperDesktopApp(
             return
 
         self.scale = min((viewer_w - 40) / map_w, (viewer_h - 40) / map_h)
-        self.scale = max(0.05, min(self.scale * 0.96, 4.0))
+        self.scale = self.clamp_map_scale(self.scale * 0.96 * self.map_zoom_multiplier)
         self.camera_x = (min_tx - self.active_map.min_x) * self.tile_size + map_w / 2.0
         self.camera_y = (min_tz - self.active_map.min_z) * self.tile_size + map_h / 2.0
         self.pending_fit = False
@@ -1360,7 +1376,7 @@ class SimpleMapperDesktopApp(
             screen_x, screen_y = self.map_to_screen(waypoint["map_x"], waypoint["map_y"])
             icon = self.icon_textures.get(waypoint["iconIndex"], self.icon_textures.get(0))
             base_size = icon.width if icon else 18
-            marker_size = max(12.0, base_size * min(max(self.scale, 0.35), 2.0))
+            marker_size = self.get_waypoint_marker_size(base_size)
             distance = math.hypot(local_x - screen_x, local_y - screen_y)
             if distance <= marker_size * 0.75 and distance < best_distance:
                 best_distance = distance
@@ -1543,6 +1559,30 @@ class SimpleMapperDesktopApp(
             return None
         return float(rect_min[0]), float(rect_min[1])
 
+    def get_item_rect_min(self, tag: str) -> tuple[float, float] | None:
+        if not dpg.does_item_exist(tag):
+            return None
+        state = dpg.get_item_state(tag)
+        rect_min = state.get("rect_min")
+        if rect_min is None:
+            return None
+        return float(rect_min[0]), float(rect_min[1])
+
+    def item_rect_contains(self, tag: str, mouse_pos: tuple[float, float] | None = None) -> bool:
+        if not dpg.does_item_exist(tag):
+            return False
+        rect_min = self.get_item_rect_min(tag)
+        if rect_min is None:
+            return False
+        width, height = dpg.get_item_rect_size(tag)
+        if width <= 0 or height <= 0:
+            return False
+        mouse_x, mouse_y = mouse_pos if mouse_pos is not None else dpg.get_mouse_pos(local=False)
+        return (
+            rect_min[0] <= mouse_x <= rect_min[0] + float(width)
+            and rect_min[1] <= mouse_y <= rect_min[1] + float(height)
+        )
+
     def get_mouse_local_to_viewer(self) -> tuple[float, float] | None:
         mouse_x, mouse_y = dpg.get_mouse_pos(local=False)
         rect_min = self.get_viewer_rect_min()
@@ -1555,6 +1595,34 @@ class SimpleMapperDesktopApp(
         drawlist_hovered = dpg.does_item_exist("map_drawlist") and dpg.is_item_hovered("map_drawlist")
         panel_hovered = dpg.does_item_exist("viewer_panel") and dpg.is_item_hovered("viewer_panel")
         return bool(drawlist_hovered or panel_hovered)
+
+    def process_sidebar_resize(self) -> bool:
+        if not self.sidebar_visible:
+            self.sidebar_resize_active = False
+            return False
+        if not dpg.does_item_exist("sidebar") or not dpg.does_item_exist("sidebar_resize_grip"):
+            self.sidebar_resize_active = False
+            return False
+
+        mouse_pos = dpg.get_mouse_pos(local=False)
+        hovered = self.item_rect_contains("sidebar_resize_grip", mouse_pos)
+        left_down = dpg.is_mouse_button_down(0)
+        mouse_x, _ = mouse_pos
+
+        if left_down:
+            if not self.sidebar_resize_active and hovered:
+                self.sidebar_resize_active = True
+            if self.sidebar_resize_active:
+                rect_min = self.get_item_rect_min("sidebar")
+                if rect_min is not None:
+                    self.apply_sidebar_width(mouse_x - rect_min[0], persist=False)
+                return True
+        elif self.sidebar_resize_active:
+            self.sidebar_resize_active = False
+            self.apply_sidebar_width(self.ui_config["sidebar_width"], persist=True)
+            return True
+
+        return hovered
 
     def mark_interaction(self, frames: int = INTERACTION_GRACE_FRAMES) -> None:
         self.interaction_active_until_frame = max(
@@ -1571,7 +1639,7 @@ class SimpleMapperDesktopApp(
 
         old_scale = self.scale
         factor = math.exp(wheel_delta * 0.14)
-        self.scale = max(0.05, min(self.scale * factor, 8.0))
+        self.scale = self.clamp_map_scale(self.scale * factor)
         if abs(self.scale - old_scale) < 1e-6:
             return
 
@@ -1605,6 +1673,8 @@ class SimpleMapperDesktopApp(
             self.sidebar_visible = not self.sidebar_visible
             if dpg.does_item_exist("sidebar"):
                 dpg.configure_item("sidebar", show=self.sidebar_visible)
+            if dpg.does_item_exist("sidebar_resize_grip"):
+                dpg.configure_item("sidebar_resize_grip", show=self.sidebar_visible)
             return
 
         ctrl_down = (
@@ -1626,6 +1696,9 @@ class SimpleMapperDesktopApp(
 
     def process_mouse(self) -> None:
         if not dpg.does_item_exist("viewer_panel"):
+            return
+
+        if self.process_sidebar_resize():
             return
 
         mouse_x, mouse_y = dpg.get_mouse_pos(local=False)
@@ -1932,7 +2005,7 @@ class SimpleMapperDesktopApp(
                 continue
             icon = self.icon_textures.get(waypoint["iconIndex"], self.icon_textures.get(0))
             base_size = icon.width if icon else 18
-            marker_size = max(12.0, base_size * min(max(self.scale, 0.35), 2.0))
+            marker_size = self.get_waypoint_marker_size(base_size)
             dpg.draw_circle(
                 (screen_x, screen_y),
                 radius=max(10.0, marker_size * 0.68),
@@ -2097,8 +2170,14 @@ class SimpleMapperDesktopApp(
         if render_as_points:
             step = max(1, len(visible_waypoints) // MAX_VISIBLE_POINT_MARKERS)
             visible_waypoints = visible_waypoints[::step]
+        effective_icon_scale = self.scale * max(0.2, float(self.marker_zoom_multiplier))
+        low_zoom_square_cutover = max(180, min(1400, self.square_render_threshold // 6))
         render_as_squares = not render_as_points and (
-            self.scale < WAYPOINT_ICON_SCALE_SWITCH or len(visible_waypoints) >= self.square_render_threshold
+            len(visible_waypoints) >= self.square_render_threshold
+            or (
+                effective_icon_scale < WAYPOINT_ICON_SCALE_SWITCH
+                and len(visible_waypoints) >= low_zoom_square_cutover
+            )
         )
 
         if render_as_points:
@@ -2137,7 +2216,7 @@ class SimpleMapperDesktopApp(
             if icon is None:
                 continue
 
-            marker_size = max(12.0, icon.width * min(max(self.scale, 0.35), 2.0))
+            marker_size = self.get_waypoint_marker_size(icon.width)
             x1 = screen_x - marker_size / 2.0
             y1 = screen_y - marker_size / 2.0
             x2 = screen_x + marker_size / 2.0
@@ -2163,7 +2242,7 @@ class SimpleMapperDesktopApp(
                     thickness=2.0,
                     parent=draw_tag,
                 )
-                if self.scale >= WAYPOINT_HIDE_NAMES_SCALE:
+                if effective_icon_scale >= WAYPOINT_HIDE_NAMES_SCALE:
                     dpg.draw_text(
                         (screen_x + 10, screen_y - 18),
                         waypoint["name"],
