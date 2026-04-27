@@ -24,7 +24,7 @@ This project is focused on local map work: editing `waypoints.cfg`, organizing m
 - Enable only the regions you need instead of loading the whole map at once
 - Load and save `waypoints.cfg`
 - Create, move, delete, rename, recolor, and re-icon waypoints
-- Parse images into waypoint markers(Mask fill/Silhouette contour/Detail edges)
+- Parse images into waypoint markers(`Mask fill`/`Silhouette contour`/`Detail edges`)
 - Preview generated markers before parsing
 - Layer support with separate local layer storage
 - Undo / Redo
