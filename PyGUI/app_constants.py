@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import sys
 
 if getattr(sys, "frozen", False):
@@ -9,6 +10,10 @@ if getattr(sys, "frozen", False):
 else:
     PROJECT_ROOT = Path(__file__).resolve().parent.parent
     RESOURCE_ROOT = PROJECT_ROOT
+
+APP_NAME = "Stalcraft-Waypoint-Editor"
+APPDATA_ROOT = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming")).resolve()
+USER_DATA_DIR = APPDATA_ROOT / APP_NAME
 
 WAYPOINT_CHUNK_SIZE = 2048.0
 WAYPOINT_ICON_SCALE_SWITCH = 0.32

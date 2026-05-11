@@ -19,8 +19,8 @@ from app_constants import (
     DEFAULT_MAX_GENERATED_MARKERS,
     DEFAULT_MARKER_ZOOM_MULTIPLIER,
     MAX_MARKERS_ON_SCREEN,
-    PROJECT_ROOT,
     SQUARE_RENDER_THRESHOLD,
+    USER_DATA_DIR,
 )
 
 
@@ -32,7 +32,7 @@ class UIBuildMixin:
             "map_zoom_multiplier": DEFAULT_MAP_ZOOM_MULTIPLIER,
             "marker_zoom_multiplier": DEFAULT_MARKER_ZOOM_MULTIPLIER,
         }
-        path = PROJECT_ROOT / "settings.json"
+        path = USER_DATA_DIR / "settings.json"
         if not path.exists():
             return defaults
         try:
@@ -61,7 +61,8 @@ class UIBuildMixin:
         return result
 
     def save_settings_config(self) -> None:
-        path = PROJECT_ROOT / "settings.json"
+        path = USER_DATA_DIR / "settings.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "max_markers_on_screen": int(self.max_markers_on_screen),
             "square_render_threshold": int(self.square_render_threshold),
@@ -87,7 +88,8 @@ class UIBuildMixin:
             dpg.set_value("marker_zoom_multiplier_input", float(self.marker_zoom_multiplier))
 
     def write_ui_config_file(self) -> None:
-        path = PROJECT_ROOT / "ui_config.json"
+        path = USER_DATA_DIR / "ui_config.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(self.ui_config, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def apply_sidebar_width(self, width: float | int, persist: bool = False) -> None:
@@ -634,7 +636,7 @@ class UIBuildMixin:
             "ui_frame_color": [52, 56, 69, 255],
             "ui_accent_color": [106, 178, 255, 255],
         }
-        path = PROJECT_ROOT / "ui_config.json"
+        path = USER_DATA_DIR / "ui_config.json"
         if not path.exists():
             return defaults
         try:

@@ -4,15 +4,16 @@ import json
 
 import dearpygui.dearpygui as dpg
 
-from app_constants import PROJECT_ROOT
+from app_constants import USER_DATA_DIR
 
 
 class LayerEditorMixin:
     def get_layers_path(self):
-        return PROJECT_ROOT / "layers.json"
+        return USER_DATA_DIR / "layers.json"
 
     def save_layers_state(self) -> None:
         path = self.get_layers_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "layer_counter": int(self.layer_counter),
             "layer_visibility": {

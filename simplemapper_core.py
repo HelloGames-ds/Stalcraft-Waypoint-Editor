@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import sys
@@ -18,13 +19,14 @@ if getattr(sys, "frozen", False):
 else:
     ROOT_DIR = Path(__file__).resolve().parent
     RESOURCE_ROOT = ROOT_DIR
+USER_DATA_DIR = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming")).resolve() / "Stalcraft-Waypoint-Editor"
 PDA_DIR = RESOURCE_ROOT / "pda"
 SCFILE_DIR = RESOURCE_ROOT / "sc-file-master"
-CACHE_DIR = ROOT_DIR / ".cache" / "tiles"
-WAYPOINT_ICONS_CACHE_DIR = ROOT_DIR / ".cache" / "waypoint_icons"
+CACHE_DIR = USER_DATA_DIR / ".cache" / "tiles"
+WAYPOINT_ICONS_CACHE_DIR = USER_DATA_DIR / ".cache" / "waypoint_icons"
 WAYPOINT_ICONS_STATIC_DIR = RESOURCE_ROOT / "assets" / "waypoint_icons"
-WAYPOINTS_PATH = ROOT_DIR / "waypoints.cfg"
-APP_CONFIG_PATH = ROOT_DIR / "app_config.json"
+WAYPOINTS_PATH = USER_DATA_DIR / "waypoints.cfg"
+APP_CONFIG_PATH = USER_DATA_DIR / "app_config.json"
 WAYPOINT_ICONS_OL_PATH = RESOURCE_ROOT / "atlas_map_waypoint.ol"
 WAYPOINT_ATLAS_JSON_PATH = RESOURCE_ROOT / "atlas_map_waypoint.sheet.json"
 
@@ -119,12 +121,13 @@ class SimpleMapperCore:
     def __init__(self, root_dir: Path | None = None, resource_root: Path | None = None) -> None:
         self.root_dir = (root_dir or ROOT_DIR).resolve()
         self.resource_root = (resource_root or RESOURCE_ROOT).resolve()
+        self.user_data_dir = USER_DATA_DIR.resolve()
         self.pda_dir = self.resource_root / "pda"
-        self.cache_dir = self.root_dir / ".cache" / "tiles"
-        self.waypoint_icons_cache_dir = self.root_dir / ".cache" / "waypoint_icons"
+        self.cache_dir = self.user_data_dir / ".cache" / "tiles"
+        self.waypoint_icons_cache_dir = self.user_data_dir / ".cache" / "waypoint_icons"
         self.waypoint_icons_static_dir = self.resource_root / "assets" / "waypoint_icons"
-        self.backups_dir = self.root_dir / "backups" / "waypoints"
-        self.app_config_path = self.root_dir / "app_config.json"
+        self.backups_dir = self.user_data_dir / "backups" / "waypoints"
+        self.app_config_path = self.user_data_dir / "app_config.json"
         self.app_config = self.load_app_config()
         self.waypoints_path = self.discover_waypoints_path()
         self.waypoint_icons_ol_path = self.resource_root / "atlas_map_waypoint.ol"
@@ -152,6 +155,7 @@ class SimpleMapperCore:
         return result
 
     def save_app_config(self) -> None:
+        self.app_config_path.parent.mkdir(parents=True, exist_ok=True)
         self.app_config_path.write_text(
             json.dumps(self.app_config, ensure_ascii=False, indent=2),
             encoding="utf-8",
@@ -182,7 +186,7 @@ class SimpleMapperCore:
             return None
         candidate = Path(raw_value)
         if not candidate.is_absolute():
-            candidate = (self.root_dir / candidate).resolve()
+            candidate = (self.user_data_dir / candidate).resolve()
         return candidate
 
     def requires_exbo_setup(self) -> bool:
@@ -201,7 +205,7 @@ class SimpleMapperCore:
     def set_exbo_dir(self, path_str: str) -> Path:
         candidate = Path(path_str.strip().strip('"'))
         if not candidate.is_absolute():
-            candidate = (self.root_dir / candidate).resolve()
+            candidate = (self.user_data_dir / candidate).resolve()
         if not candidate.exists() or not candidate.is_dir():
             raise FileNotFoundError("EXBO folder not found")
         self.app_config["exbo_dir"] = str(candidate)
@@ -212,7 +216,7 @@ class SimpleMapperCore:
     def discover_waypoints_path(self) -> Path:
         candidates = [
             self.build_waypoints_path_from_exbo_dir(self.get_exbo_dir()),
-            self.root_dir / "waypoints.cfg",
+            self.user_data_dir / "waypoints.cfg",
         ]
         for candidate in candidates:
             if candidate.exists() and candidate.is_file():
@@ -244,10 +248,16 @@ class SimpleMapperCore:
 
     def scan_zone_png_maps(self) -> Dict[str, MapInfo]:
         maps: Dict[str, MapInfo] = {}
-        search_roots = [
+        search_roots: list[Path] = []
+        for candidate in (
+            self.resource_root / "assets" / "maps",
+            self.resource_root / "zone_exports",
             self.root_dir / "assets" / "maps",
             self.root_dir / "zone_exports",
-        ]
+        ):
+            resolved = candidate.resolve()
+            if resolved not in search_roots:
+                search_roots.append(resolved)
 
         for exports_dir in search_roots:
             if not exports_dir.exists():
