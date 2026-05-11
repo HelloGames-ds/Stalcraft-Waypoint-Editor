@@ -1,7 +1,6 @@
+<div align="center">
 
 # Stalcraft Waypoint Editor
-
-<div align="center">
 
 🌐 **Доступно на:** [🇬🇧 English](README.md) | 🇷🇺 **Русский**
 
