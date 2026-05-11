@@ -2,7 +2,7 @@
 
 Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint editing, image-to-marker parsing, and layer support.
 
-This project is focused on local map work: editing `waypoints.cfg`, organizing markers, and placing waypoint shapes from reference images on top of zone PNG packs.
+This project is focused on local map work: editing `waypoints.cfg`, organizing markers, and placing waypoint shapes from reference images on top of zone PNG packs. The repository also includes a GitHub Actions workflow for building a standalone Windows `.exe`.
 
 ---
 
@@ -49,6 +49,14 @@ py -3 -m pip install -r requirements.txt
 
 ## Run
 
+### Option 1: Run the packaged `.exe`
+
+- Open the repository `Releases` page
+- Download `Stalcraft-Waypoint-Editor.exe` from the latest release assets
+- Run the executable
+
+### Option 2: Run from source
+
 From the project root:
 
 ```powershell
@@ -76,14 +84,22 @@ The app then looks for:
 <EXBO>\runtime\stalcraft\config\waypoints.cfg
 ```
 
-Local runtime files created by the app:
+Local runtime files created by the app are stored in:
+
+```text
+%APPDATA%\Stalcraft-Waypoint-Editor
+```
+
+This includes:
 
 - `app_config.json`
+- `settings.json`
 - `ui_config.json`
 - `layers.json`
 - `backups/`
+- `.cache/`
 
-These files are user-local and should usually stay out of the repository.
+These files are user-local, are not stored next to the executable, and should usually stay out of the repository.
 
 ---
 
@@ -110,6 +126,18 @@ These files are user-local and should usually stay out of the repository.
 - `simplemapper_core.py` - cfg IO, asset discovery, and map scanning
 - `assets/maps/zone_pack_png` - zone PNG pack
 - `assets/waypoint_icons` - waypoint icons
+- `.github/workflows/build-exe.yml` - GitHub Actions workflow for Windows `.exe` builds
+- `simplemapper_runtime.spec` - PyInstaller spec for one-file packaging
+
+---
+
+## Build EXE
+
+The repository is configured to build a standalone Windows `.exe` through GitHub Actions.
+
+- Push changes to `main`
+- Open the latest `Build Windows EXE` workflow run in `Actions`
+- Download the artifact containing `Stalcraft-Waypoint-Editor.exe`
 
 ---
 
