@@ -8,6 +8,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   build-windows-exe:
     runs-on: windows-latest
@@ -55,3 +58,20 @@ jobs:
           name: Stalcraft-Waypoint-Editor-windows
           path: dist/Stalcraft-Waypoint-Editor.exe
           if-no-files-found: error
+
+      - name: Attach EXE to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "$env:GITHUB_REF_NAME"
+          $asset = "dist/Stalcraft-Waypoint-Editor.exe"
+          $notes = "Automated Windows one-file build."
+
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag $asset --title $tag --notes $notes
+          }
+          else {
+            gh release upload $tag $asset --clobber
+          }
