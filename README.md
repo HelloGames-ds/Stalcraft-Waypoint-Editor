@@ -2,9 +2,9 @@
 
 <img wifth="128" height="128" alt="icon" src="https://github.com/HelloGames-ds/Stalcraft-Waypoint-Editor/blob/main/assets/app.ico" />
 
-Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint editing, image-to-marker parsing, and layer support.
+---
 
-This project is focused on local map work: editing `waypoints.cfg`, organizing markers, and placing waypoint shapes from reference images on top of zone PNG packs. The repository also includes a GitHub Actions workflow for building a standalone Windows `.exe`.
+Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint editing, image-to-marker parsing, and layer support.
 
 ---
 
