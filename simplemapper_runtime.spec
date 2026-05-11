@@ -1,8 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
 from pathlib import Path
 
-project_root = Path(__file__).resolve().parent
+project_root = Path(os.getcwd()).resolve()
 
 datas = [
     (str(project_root / "assets"), "assets"),
