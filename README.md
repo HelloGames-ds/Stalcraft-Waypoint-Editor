@@ -1,7 +1,10 @@
 # Stalcraft Waypoint Editor
 
-<div align="right">
-  <a href="README.md">🇬🇧 EN</a> · <a href="README.ru.md">🇷🇺 RU</a>
+<div align="center">
+
+**🌐 Available in:**  
+🇬🇧 **English** · [🇷🇺 Русский](README.ru.md)
+
 </div>
 
 <img wifth="128" height="128" alt="icon" src="https://github.com/HelloGames-ds/Stalcraft-Waypoint-Editor/blob/main/assets/app.ico" />
