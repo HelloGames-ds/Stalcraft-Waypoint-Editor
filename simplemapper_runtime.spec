@@ -38,4 +38,5 @@ exe = EXE(
     runtime_tmpdir=None,
     console=False,
     disable_windowed_traceback=False,
+    icon=str(project_root / "assets" / "app.ico"),
 )
