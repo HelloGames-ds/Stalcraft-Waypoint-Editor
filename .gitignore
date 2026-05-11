@@ -6,6 +6,7 @@ build/
 dist/
 *.exe
 *.spec
+!simplemapper_runtime.spec
 
 .cache/
 backups/

@@ -5,8 +5,10 @@ import sys
 
 if getattr(sys, "frozen", False):
     PROJECT_ROOT = Path(sys.executable).resolve().parent
+    RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", PROJECT_ROOT)).resolve()
 else:
     PROJECT_ROOT = Path(__file__).resolve().parent.parent
+    RESOURCE_ROOT = PROJECT_ROOT
 
 WAYPOINT_CHUNK_SIZE = 2048.0
 WAYPOINT_ICON_SCALE_SWITCH = 0.32

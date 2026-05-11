@@ -14,17 +14,19 @@ from PIL import Image
 
 if getattr(sys, "frozen", False):
     ROOT_DIR = Path(sys.executable).resolve().parent
+    RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", ROOT_DIR)).resolve()
 else:
     ROOT_DIR = Path(__file__).resolve().parent
-PDA_DIR = ROOT_DIR / "pda"
-SCFILE_DIR = ROOT_DIR / "sc-file-master"
+    RESOURCE_ROOT = ROOT_DIR
+PDA_DIR = RESOURCE_ROOT / "pda"
+SCFILE_DIR = RESOURCE_ROOT / "sc-file-master"
 CACHE_DIR = ROOT_DIR / ".cache" / "tiles"
 WAYPOINT_ICONS_CACHE_DIR = ROOT_DIR / ".cache" / "waypoint_icons"
-WAYPOINT_ICONS_STATIC_DIR = ROOT_DIR / "assets" / "waypoint_icons"
+WAYPOINT_ICONS_STATIC_DIR = RESOURCE_ROOT / "assets" / "waypoint_icons"
 WAYPOINTS_PATH = ROOT_DIR / "waypoints.cfg"
 APP_CONFIG_PATH = ROOT_DIR / "app_config.json"
-WAYPOINT_ICONS_OL_PATH = ROOT_DIR / "atlas_map_waypoint.ol"
-WAYPOINT_ATLAS_JSON_PATH = ROOT_DIR / "atlas_map_waypoint.sheet.json"
+WAYPOINT_ICONS_OL_PATH = RESOURCE_ROOT / "atlas_map_waypoint.ol"
+WAYPOINT_ATLAS_JSON_PATH = RESOURCE_ROOT / "atlas_map_waypoint.sheet.json"
 
 TILE_PATTERN = re.compile(r"^r\.(-?\d+)\.(-?\d+)\.(ol|mic)$")
 WAYPOINT_ICON_FRAME_KEYS: list[str] = [
@@ -114,18 +116,19 @@ class MapInfo:
 
 
 class SimpleMapperCore:
-    def __init__(self, root_dir: Path | None = None) -> None:
+    def __init__(self, root_dir: Path | None = None, resource_root: Path | None = None) -> None:
         self.root_dir = (root_dir or ROOT_DIR).resolve()
-        self.pda_dir = self.root_dir / "pda"
+        self.resource_root = (resource_root or RESOURCE_ROOT).resolve()
+        self.pda_dir = self.resource_root / "pda"
         self.cache_dir = self.root_dir / ".cache" / "tiles"
         self.waypoint_icons_cache_dir = self.root_dir / ".cache" / "waypoint_icons"
-        self.waypoint_icons_static_dir = self.root_dir / "assets" / "waypoint_icons"
+        self.waypoint_icons_static_dir = self.resource_root / "assets" / "waypoint_icons"
         self.backups_dir = self.root_dir / "backups" / "waypoints"
         self.app_config_path = self.root_dir / "app_config.json"
         self.app_config = self.load_app_config()
         self.waypoints_path = self.discover_waypoints_path()
-        self.waypoint_icons_ol_path = self.root_dir / "atlas_map_waypoint.ol"
-        self.waypoint_atlas_json_path = self.root_dir / "atlas_map_waypoint.sheet.json"
+        self.waypoint_icons_ol_path = self.resource_root / "atlas_map_waypoint.ol"
+        self.waypoint_atlas_json_path = self.resource_root / "atlas_map_waypoint.sheet.json"
         self._maps_cache: Dict[str, MapInfo] | None = None
         self._waypoint_icon_bboxes_cache: dict[int, tuple[int, int, int, int]] | None = None
         self._startup_backup_done = False
@@ -232,7 +235,7 @@ class SimpleMapperCore:
         return self.backup_waypoints_file(self.get_waypoints_path())
 
     def get_scfile_formats(self):
-        scfile_dir = (self.root_dir / "sc-file-master").resolve()
+        scfile_dir = (self.resource_root / "sc-file-master").resolve()
         if str(scfile_dir) not in sys.path:
             sys.path.insert(0, str(scfile_dir))
         from scfile import formats  # type: ignore

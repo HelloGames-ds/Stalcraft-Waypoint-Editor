@@ -10,7 +10,7 @@ import dearpygui.dearpygui as dpg
 import numpy as np
 from PIL import Image
 
-from app_constants import PROJECT_ROOT
+from app_constants import PROJECT_ROOT, RESOURCE_ROOT
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -54,7 +54,7 @@ class SimpleMapperDesktopApp(
     ZoneLoadingMixin,
 ):
     def __init__(self) -> None:
-        self.core = SimpleMapperCore(Path(__file__).resolve().parent.parent)
+        self.core = SimpleMapperCore(PROJECT_ROOT, RESOURCE_ROOT)
         self.language_setup_required = self.core.requires_language_setup()
         self.language = "en" if self.language_setup_required else self.core.get_language()
         self.ui_config = self.load_ui_config()
