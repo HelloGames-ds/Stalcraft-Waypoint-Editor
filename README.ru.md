@@ -1,6 +1,10 @@
 
 # Stalcraft Waypoint Editor
 
+<img wifth="128" height="128" alt="icon" src="https://github.com/HelloGames-ds/Stalcraft-Waypoint-Editor/blob/main/assets/app.ico" />
+
+---
+
 Десктопный редактор вейпоинтов для **Stalcraft** с загрузкой карты по зонам, редактированием маркеров, парсингом изображений в маркеры и поддержкой слоёв.
 
 ---
