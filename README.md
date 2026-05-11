@@ -1,9 +1,8 @@
-# Stalcraft Waypoint Editor
-
 <div align="center">
 
-**🌐 Available in:**  
-🇬🇧 **English** · [🇷🇺 Русский](README.ru.md)
+# Stalcraft Waypoint Editor
+
+🌐 **Available in:** 🇬🇧 **English** | [🇷🇺 Русский](README.ru.md)
 
 </div>
 
