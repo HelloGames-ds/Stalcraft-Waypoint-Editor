@@ -16,13 +16,16 @@ Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint 
 
 ## Screenshots
 
-<img width="632" height="312" alt="Image" src="https://github.com/user-attachments/assets/1af8c97f-be9f-486a-af7c-c7478d5eebe4" />
-
-<img width="1920" height="1017" alt="Image" src="https://github.com/user-attachments/assets/2f3c2438-d8b4-46f2-9606-9145e15e78a3" />
-
-<img width="1920" height="1017" alt="Image" src="https://github.com/user-attachments/assets/3e49643e-7501-45d2-874e-248d64b5aca0" />
-
-<img width="914" height="849" alt="Image" src="https://github.com/user-attachments/assets/29f151f7-c518-4ce6-8734-3dd3b859ea18" />
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/1af8c97f-be9f-486a-af7c-c7478d5eebe4" alt="Image" width="122%"></td>
+    <td><img src="https://github.com/user-attachments/assets/2f3c2438-d8b4-46f2-9606-9145e15e78a3" alt="Image" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/3e49643e-7501-45d2-874e-248d64b5aca0" alt="Image" width="100%"></td>
+    <td><img src="https://github.com/user-attachments/assets/29f151f7-c518-4ce6-8734-3dd3b859ea18" alt="Image" width="100%"></td>
+  </tr>
+</table>
 
 ---
 
