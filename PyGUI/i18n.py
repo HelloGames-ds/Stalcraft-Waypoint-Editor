@@ -18,6 +18,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     "section_map": {"ru": "Карта", "en": "Map"},
     "section_regions": {"ru": "Регионы", "en": "Regions"},
     "section_marker_actions": {"ru": "Действия с метками", "en": "Marker Actions"},
+    "section_create_waypoint": {"ru": "Создание метки", "en": "Create Waypoint"},
     "section_waypoint_editor": {"ru": "Редактор меток", "en": "Waypoint Editor"},
     "section_source": {"ru": "Источник", "en": "Source"},
     "section_parsing": {"ru": "Парсинг", "en": "Parsing"},
@@ -46,10 +47,12 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     "save_changes": {"ru": "Сохранить изменения", "en": "Save changes"},
     "center_selected": {"ru": "Центрировать выделение", "en": "Center Selected"},
     "delete_selected": {"ru": "Удалить выделенное", "en": "Delete Selected"},
+    "create_waypoint": {"ru": "Создать метку в центре", "en": "Create waypoint at center"},
     "selected_count": {"ru": "Выбрано: {count}", "en": "Selected: {count}"},
     "field_name": {"ru": "Имя", "en": "Name"},
     "field_color": {"ru": "Цвет", "en": "Color"},
     "field_icon_shape": {"ru": "Иконка / форма", "en": "Icon / shape"},
+    "new_waypoint_hint": {"ru": "Пустое имя = без названия", "en": "Empty name = unnamed waypoint"},
     "apply_style_selected": {"ru": "Применить стиль к выбранным", "en": "Apply Style To Selected"},
     "waypoint_name_note_empty": {
         "ru": "Выбери одну или несколько меток для редактирования",
@@ -178,6 +181,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     "status_image_preview_load_error": {"ru": "Не удалось загрузить превью картинки: {error}", "en": "Failed to load image preview: {error}"},
     "status_select_image_first": {"ru": "Сначала выбери картинку", "en": "Choose an image first"},
     "status_open_map_first": {"ru": "Сначала открой карту", "en": "Open a map first"},
+    "status_waypoint_created": {"ru": "Создана новая метка", "en": "New waypoint created"},
     "status_place_image_first": {"ru": "Сначала размести картинку на карте", "en": "Place the image on the map first"},
     "status_no_pixels_after_cutoff": {"ru": "После отсечения в картинке не осталось подходящих пикселей", "en": "No valid pixels remained after cutoffs"},
     "status_generated": {"ru": "Сгенерировано: {count} меток, res {width}x{height}, {mode}", "en": "Generated: {count} markers, res {width}x{height}, {mode}"},
@@ -260,6 +264,55 @@ TRANSLATIONS["apply_view_calibration"] = {
 TRANSLATIONS["status_view_calibration_applied"] = {
     "ru": "Калибровка зума применена: map {map_zoom:.2f}, markers {marker_zoom:.2f}",
     "en": "Zoom calibration applied: map {map_zoom:.2f}, markers {marker_zoom:.2f}",
+}
+
+TRANSLATIONS["zone_north_zone"] = {
+    "ru": "Северная зона",
+    "en": "North Zone",
+}
+TRANSLATIONS["zone_south_zone"] = {
+    "ru": "Южная зона",
+    "en": "South Zone",
+}
+TRANSLATIONS["zone_wild_north"] = {
+    "ru": "Дикий север",
+    "en": "Wild North",
+}
+TRANSLATIONS["zone_sov_hoz_labirint"] = {
+    "ru": "Совхоз + Лабиринт",
+    "en": "Sovkhoz + Labirint",
+}
+TRANSLATIONS["zone_nizina_1"] = {
+    "ru": "Низина 1",
+    "en": "Nizina 1",
+}
+TRANSLATIONS["zone_nizina_2"] = {
+    "ru": "Низина 2",
+    "en": "Nizina 2",
+}
+TRANSLATIONS["zone_potasa"] = {
+    "ru": "Потаса",
+    "en": "Potasa",
+}
+TRANSLATIONS["zone_boral"] = {
+    "ru": "Бораль",
+    "en": "Boral",
+}
+TRANSLATIONS["zone_potasa_kvartaly"] = {
+    "ru": "Потасовка кварталы",
+    "en": "Kvartaly",
+}
+TRANSLATIONS["zone_hvoynik"] = {
+    "ru": "Хвойник",
+    "en": "Hvoynik",
+}
+TRANSLATIONS["zone_tur_berda"] = {
+    "ru": "Тур Берда",
+    "en": "Tur berda",
+}
+TRANSLATIONS["zone_lima"] = {
+    "ru": "Лиманск",
+    "en": "Limansk",
 }
 
 TRANSLATIONS["parser_mode"] = {

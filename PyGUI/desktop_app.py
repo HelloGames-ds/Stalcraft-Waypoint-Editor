@@ -146,6 +146,24 @@ class SimpleMapperDesktopApp(
     def t(self, key: str, **kwargs) -> str:
         return translate(self.language, key, **kwargs)
 
+    def get_zone_translation_key(self, zone_name: str) -> str:
+        normalized = (
+            str(zone_name)
+            .strip()
+            .lower()
+            .replace("+", " ")
+            .replace("-", "_")
+            .replace("/", "_")
+        )
+        normalized = "_".join(part for part in normalized.replace("__", "_").split())
+        normalized = normalized.replace("norh", "north")
+        return f"zone_{normalized}"
+
+    def get_zone_display_name(self, zone_name: str) -> str:
+        key = self.get_zone_translation_key(zone_name)
+        translated = translate(self.language, key)
+        return translated if translated != key else str(zone_name)
+
     def clamp_map_scale(self, scale: float) -> float:
         min_scale = 0.05 * max(0.2, float(self.map_zoom_multiplier))
         max_scale = 8.0 * max(0.5, float(self.map_zoom_multiplier))
@@ -554,6 +572,16 @@ class SimpleMapperDesktopApp(
     def get_waypoint_icon_labels(self) -> list[str]:
         return [f"{index}: {name}" for index, name in sorted(WAYPOINT_ICON_NAMES.items())]
 
+    def parse_waypoint_icon_value(self, value: object, default: int = 0) -> int:
+        try:
+            text = str(value)
+            return max(0, min(6, int(text.split(":", 1)[0].strip())))
+        except Exception:
+            try:
+                return max(0, min(6, int(value)))
+            except Exception:
+                return default
+
     def refresh_selected_waypoint_editor(self) -> None:
         if not dpg.does_item_exist("selected_waypoints_info_text"):
             return
@@ -653,6 +681,53 @@ class SimpleMapperDesktopApp(
 
     def on_apply_selected_waypoint_style_clicked(self, sender, app_data, user_data=None) -> None:
         self.apply_style_to_selected_waypoints()
+
+    def create_waypoint_at_view_center(self) -> None:
+        if self.active_map is None:
+            self.set_status(self.t("status_open_map_first"))
+            return
+
+        rgba = (
+            list(dpg.get_value("new_waypoint_color_input"))
+            if dpg.does_item_exist("new_waypoint_color_input")
+            else [255, 255, 255, 255]
+        )
+        r, g, b, a = [max(0, min(255, int(v))) for v in (rgba + [255, 255, 255, 255])[:4]]
+        icon_index = self.parse_waypoint_icon_value(
+            dpg.get_value("new_waypoint_icon_combo") if dpg.does_item_exist("new_waypoint_icon_combo") else 0
+        )
+        name_value = ""
+        if dpg.does_item_exist("new_waypoint_name_input"):
+            name_value = str(dpg.get_value("new_waypoint_name_input")).strip()
+
+        world_x = self.camera_x + self.active_map.min_x * self.tile_size
+        world_z = self.camera_y + self.active_map.min_z * self.tile_size
+        color_raw = ((a & 0xFF) << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF)
+        next_time = 1_700_000_000_000 + len(self.raw_waypoints) + len(self.generated_raw_waypoints)
+
+        self.push_undo_state()
+        self.raw_waypoints.append(
+            {
+                "color": int(color_raw),
+                "can_position_float": True,
+                "time": int(next_time),
+                "icon_index": int(icon_index),
+                "pos": {"x": float(world_x), "y": 70.0, "z": float(world_z)},
+                "name": name_value,
+                "type": "manual",
+            }
+        )
+        new_source_id = len(self.raw_waypoints) - 1
+        self.sync_waypoints_from_raw()
+        for waypoint in self.display_waypoints:
+            if waypoint["source"] == "cfg" and int(waypoint["source_id"]) == new_source_id:
+                self.update_selection_state({int(waypoint["id"])}, primary_id=int(waypoint["id"]))
+                break
+        self.center_on_selected_waypoint()
+        self.set_status(self.t("status_waypoint_created"))
+
+    def on_create_waypoint_clicked(self, sender, app_data, user_data=None) -> None:
+        self.create_waypoint_at_view_center()
 
     def current_center_tile(self) -> tuple[float, float]:
         if self.active_map is None:

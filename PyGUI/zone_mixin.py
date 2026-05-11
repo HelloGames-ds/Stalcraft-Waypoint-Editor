@@ -121,7 +121,13 @@ class ZoneLoadingMixin:
                 self.zone_disable_pending.discard(key)
                 return True
         except Exception as error:
-            self.set_status(self.t("status_zone_load_error", zone=zone.name, error=error))
+            self.set_status(
+                self.t(
+                    "status_zone_load_error",
+                    zone=self.get_zone_display_name(zone.name),
+                    error=error,
+                )
+            )
             return False
 
     def update_zone_reveal_animation(self) -> None:
@@ -161,7 +167,7 @@ class ZoneLoadingMixin:
 
         for zone in self.active_map.zones:
             dpg.add_checkbox(
-                label=zone.name,
+                label=self.get_zone_display_name(zone.name),
                 default_value=zone.name in self.enabled_zone_names,
                 callback=self.on_zone_toggle,
                 user_data=zone.name,

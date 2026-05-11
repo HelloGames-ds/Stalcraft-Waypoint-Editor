@@ -356,6 +356,7 @@ class UIBuildMixin:
             "header_map": self.t("section_map"),
             "header_regions": self.t("section_regions"),
             "header_marker_actions": self.t("section_marker_actions"),
+            "header_create_waypoint": self.t("section_create_waypoint"),
             "header_waypoint_editor": self.t("section_waypoint_editor"),
             "header_source": self.t("section_source"),
             "header_parsing": self.t("section_parsing"),
@@ -378,6 +379,7 @@ class UIBuildMixin:
             "save_changes_button": self.t("save_changes"),
             "center_selected_button": self.t("center_selected"),
             "delete_selected_button": self.t("delete_selected"),
+            "create_waypoint_button": self.t("create_waypoint"),
             "selected_waypoint_apply_button": self.t("apply_style_selected"),
             "open_image_button": self.t("open_image"),
             "reload_image_button": self.t("reload_image"),
@@ -403,6 +405,7 @@ class UIBuildMixin:
             "regions_hint_text": self.t("regions_hint"),
             "source_title_text": self.t("image_to_markers"),
             "image_preview_hint_text": self.t("image_preview_hint"),
+            "new_waypoint_hint_text": self.t("new_waypoint_hint"),
             "image_max_markers_label": self.t("max_markers"),
             "image_parser_mode_label": self.t("parser_mode"),
             "image_alpha_cutoff_label": self.t("alpha_cutoff"),
@@ -482,6 +485,7 @@ class UIBuildMixin:
                 dpg.set_value("generated_status", self.t("generated_buffer_empty"))
         self.refresh_selected_waypoint_editor()
         self.refresh_waypoint_list()
+        self.refresh_zone_list()
         self.refresh_layers_list()
         self.refresh_exbo_settings_ui()
         self.refresh_language_settings_ui()
@@ -790,6 +794,31 @@ class UIBuildMixin:
                 dpg.add_button(label=self.t("center_selected"), tag="center_selected_button", width=-1, callback=self.on_center_selected_clicked)
                 dpg.add_button(label=self.t("delete_selected"), tag="delete_selected_button", width=-1, callback=self.on_delete_selected_clicked)
 
+            with dpg.collapsing_header(label=self.t("section_create_waypoint"), default_open=False, tag="header_create_waypoint"):
+                dpg.add_text(self.t("field_name"))
+                dpg.add_input_text(tag="new_waypoint_name_input", width=-1, default_value="")
+                dpg.add_text(self.t("new_waypoint_hint"), tag="new_waypoint_hint_text", wrap=320)
+                dpg.add_text(self.t("field_color"))
+                dpg.add_color_edit(
+                    tag="new_waypoint_color_input",
+                    default_value=[255, 255, 255, 255],
+                    alpha_bar=True,
+                    width=-1,
+                )
+                dpg.add_text(self.t("field_icon_shape"))
+                dpg.add_combo(
+                    items=self.get_waypoint_icon_labels(),
+                    tag="new_waypoint_icon_combo",
+                    width=-1,
+                    default_value=self.get_waypoint_icon_labels()[0],
+                )
+                dpg.add_button(
+                    label=self.t("create_waypoint"),
+                    tag="create_waypoint_button",
+                    width=-1,
+                    callback=self.on_create_waypoint_clicked,
+                )
+
             with dpg.collapsing_header(label=self.t("section_waypoint_editor"), default_open=False, tag="header_waypoint_editor"):
                 dpg.add_text(self.t("selected_count", count=0), tag="selected_waypoints_info_text")
                 dpg.add_text(self.t("field_name"))
@@ -941,7 +970,12 @@ class UIBuildMixin:
                     dpg.add_text(self.t("image_parser_advanced_hint"), tag="image_parser_advanced_hint_text", wrap=320)
 
                 dpg.add_text(self.t("field_icon"), tag="image_parsing_icon_label")
-                dpg.add_input_int(tag="image_icon_input", default_value=0, min_value=0, min_clamped=True, width=-1)
+                dpg.add_combo(
+                    items=self.get_waypoint_icon_labels(),
+                    tag="image_icon_input",
+                    width=-1,
+                    default_value=self.get_waypoint_icon_labels()[0],
+                )
                 dpg.add_checkbox(label=self.t("auto_icons"), tag="image_auto_icons_input", default_value=True)
                 dpg.add_button(label=self.t("parse_image"), tag="parse_image_button", width=-1, callback=self.on_generate_image_clicked)
                 dpg.add_text(self.t("generated_buffer_empty"), tag="generated_status", wrap=320)

@@ -656,7 +656,9 @@ class ImageGenerationMixin:
             self.update_generated_status(self.t("status_place_image_first"))
             return
 
-        fixed_icon_index = max(0, min(6, int(dpg.get_value("image_icon_input"))))
+        fixed_icon_index = self.parse_waypoint_icon_value(
+            dpg.get_value("image_icon_input") if dpg.does_item_exist("image_icon_input") else 0
+        )
         use_auto_icons = bool(dpg.get_value("image_auto_icons_input"))
         parser_mode = self.get_current_image_parser_mode()
         opaque_pixels, target_w, target_h = self.get_marker_preview_data()
