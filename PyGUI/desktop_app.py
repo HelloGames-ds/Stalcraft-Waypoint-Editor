@@ -2546,7 +2546,14 @@ class SimpleMapperDesktopApp(
         self.configure_image_settings_visibility()
         self.update_image_marker_estimate(None)
 
-        dpg.create_viewport(title="SimpleMapper Desktop", width=1440, height=900)
+        icon_path = str(RESOURCE_ROOT / "assets" / "app.ico")
+        dpg.create_viewport(
+            title="Waypoint Editor",
+            small_icon=icon_path,
+            large_icon=icon_path,
+            width=1440,
+            height=900,
+        )
         self.setup_fonts()
         dpg.setup_dearpygui()
         dpg.show_viewport()
