@@ -2546,16 +2546,24 @@ class SimpleMapperDesktopApp(
         self.configure_image_settings_visibility()
         self.update_image_marker_estimate(None)
 
-        icon_path = str(RESOURCE_ROOT / "assets" / "app.ico")
-        dpg.create_viewport(
-            title="Waypoint Editor",
-            small_icon=icon_path,
-            large_icon=icon_path,
-            width=1440,
-            height=900,
-        )
+        icon_path = RESOURCE_ROOT / "assets" / "app.ico"
+        viewport_kwargs = {
+            "title": "Waypoint Editor",
+            "width": 1440,
+            "height": 900,
+        }
+        if icon_path.exists():
+            viewport_kwargs["small_icon"] = str(icon_path)
+            viewport_kwargs["large_icon"] = str(icon_path)
+
+        dpg.create_viewport(**viewport_kwargs)
         self.setup_fonts()
         dpg.setup_dearpygui()
+
+        if icon_path.exists():
+            dpg.set_viewport_small_icon(str(icon_path))
+            dpg.set_viewport_large_icon(str(icon_path))
+
         dpg.show_viewport()
         dpg.set_primary_window("main_window", True)
         dpg.maximize_viewport()
