@@ -1,0 +1,346 @@
+from __future__ import annotations
+
+
+TRANSLATIONS: dict[str, dict[str, str]] = {
+    "app_title": {
+"ru": "Waypoint Editor",
+    "en": "Waypoint Editor",
+    },
+    "app_subtitle": {
+        "ru": "Локальный viewer без браузера",
+        "en": "Local viewer without browser",
+    },
+    "tab_main": {"ru": "Основное", "en": "Main"},
+    "tab_image": {"ru": "Картинка", "en": "Image"},
+    "tab_layers": {"ru": "Слои", "en": "Layers"},
+    "tab_settings": {"ru": "Настройки", "en": "Settings"},
+    "tab_help": {"ru": "Помощь", "en": "Help"},
+    "section_map": {"ru": "Карта", "en": "Map"},
+    "section_regions": {"ru": "Регионы", "en": "Regions"},
+    "section_marker_actions": {"ru": "Действия с метками", "en": "Marker Actions"},
+    "section_create_waypoint": {"ru": "Создание метки", "en": "Create Waypoint"},
+    "section_waypoint_editor": {"ru": "Редактор меток", "en": "Waypoint Editor"},
+    "section_source": {"ru": "Источник", "en": "Source"},
+    "section_parsing": {"ru": "Парсинг", "en": "Parsing"},
+    "section_contour": {"ru": "Настройки контура", "en": "Contour Settings"},
+    "section_layer_editor": {"ru": "Редактор слоёв", "en": "Layer Editor"},
+    "section_exbo_cfg": {"ru": "EXBO / CFG", "en": "EXBO / CFG"},
+    "section_language": {"ru": "Язык", "en": "Language"},
+    "section_optimization": {"ru": "Оптимизация", "en": "Optimization"},
+    "section_ui": {"ru": "UI", "en": "UI"},
+    "section_layout": {"ru": "Расположение", "en": "Layout"},
+    "section_marker_preview": {"ru": "Превью маркеров", "en": "Marker Preview"},
+    "section_colors": {"ru": "Цвета", "en": "Colors"},
+    "section_controls": {"ru": "Управление", "en": "Controls"},
+    "section_notes": {"ru": "Заметки", "en": "Notes"},
+    "section_status": {"ru": "Статус", "en": "Status"},
+    "fit_to_map": {"ru": "Подогнать карту", "en": "Fit To Map"},
+    "enable_all_regions": {"ru": "Включить все регионы", "en": "Enable All Regions"},
+    "disable_all_regions": {"ru": "Выключить все регионы", "en": "Disable All Regions"},
+    "regions_hint": {
+        "ru": "На старте регионы выключены. Включай только нужные зоны.",
+        "en": "Regions are disabled on startup. Enable only the zones you need.",
+    },
+    "markers_count": {"ru": "Метки: {count}", "en": "Markers: {count}"},
+    "markers_generated_suffix": {"ru": "generated {count}", "en": "generated {count}"},
+    "markers_first_shown": {"ru": "в списке показаны первые {count}", "en": "first {count} shown in list"},
+    "save_changes": {"ru": "Сохранить изменения", "en": "Save changes"},
+    "center_selected": {"ru": "Центрировать выделение", "en": "Center Selected"},
+    "delete_selected": {"ru": "Удалить выделенное", "en": "Delete Selected"},
+    "create_waypoint": {"ru": "Создать метку в центре", "en": "Create waypoint at center"},
+    "selected_count": {"ru": "Выбрано: {count}", "en": "Selected: {count}"},
+    "field_name": {"ru": "Имя", "en": "Name"},
+    "field_color": {"ru": "Цвет", "en": "Color"},
+    "field_icon_shape": {"ru": "Иконка / форма", "en": "Icon / shape"},
+    "new_waypoint_hint": {"ru": "Пустое имя = без названия", "en": "Empty name = unnamed waypoint"},
+    "apply_style_selected": {"ru": "Применить стиль к выбранным", "en": "Apply Style To Selected"},
+    "waypoint_name_note_empty": {
+        "ru": "Выбери одну или несколько меток для редактирования",
+        "en": "Choose one or more markers to edit",
+    },
+    "waypoint_name_note_mixed": {
+        "ru": "Выбраны метки с разными именами. Оставь поле пустым, чтобы не менять имя.",
+        "en": "Mixed names selected. Leave it empty to keep current names.",
+    },
+    "waypoint_name_note_apply": {
+        "ru": "Имя будет применено ко всем выбранным меткам.",
+        "en": "Name will be applied to all selected markers.",
+    },
+    "image_to_markers": {"ru": "Картинка -> метки", "en": "Image -> markers"},
+    "open_image": {"ru": "Открыть картинку...", "en": "Open Image..."},
+    "reload_image": {"ru": "Перезагрузить картинку", "en": "Reload Image"},
+    "image_preview_hint": {
+        "ru": "Превью показывает будущие маркеры, а не исходный PNG.",
+        "en": "Preview shows future markers, not the raw PNG.",
+    },
+    "max_markers": {"ru": "Макс. меток", "en": "Max markers"},
+    "estimated_markers": {"ru": "Превью маркеров: {count}", "en": "Estimated markers: {count}"},
+    "estimated_markers_empty": {"ru": "Превью маркеров: -", "en": "Estimated markers: -"},
+    "include_background": {
+        "ru": "Генерировать с фоном (включая прозрачную область)",
+        "en": "Generate with background (including transparent area)",
+    },
+    "alpha_cutoff": {"ru": "Отсечение по альфе", "en": "Alpha cutoff"},
+    "sampling_grid_step": {"ru": "Шаг сетки выборки (px)", "en": "Sampling grid step (px)"},
+    "contour_only": {"ru": "Только контур", "en": "Contour only"},
+    "field_icon": {"ru": "Иконка", "en": "Icon"},
+    "auto_icons": {"ru": "Автоиконки", "en": "Auto icons"},
+    "parse_image": {"ru": "Парсить картинку", "en": "Parse Image"},
+    "generated_buffer_empty": {"ru": "Буфер генерации пуст", "en": "Generation buffer is empty"},
+    "brightness_cutoff": {"ru": "Отсечение по яркости", "en": "Brightness cutoff"},
+    "contour_thickness": {"ru": "Толщина контура", "en": "Contour thickness"},
+    "contour_only_hint": {
+        "ru": "Эти параметры влияют только на режим контура.",
+        "en": "These settings affect contour mode only.",
+    },
+    "layer_editor_title": {"ru": "Редактор слоёв", "en": "Layer editor"},
+    "layer_name_hint": {"ru": "Имя слоя", "en": "Layer name"},
+    "add_selected_to_layer": {"ru": "Добавить выделенное в слой", "en": "Add Selected To Layer"},
+    "layer_hint": {
+        "ru": "Клик по слою выделяет его метки. Чекбокс переключает видимость.",
+        "en": "Click a layer to select its markers. Checkbox toggles visibility.",
+    },
+    "exbo_folder": {"ru": "Папка EXBO", "en": "EXBO folder"},
+    "browse_exbo": {"ru": "Выбрать EXBO...", "en": "Browse EXBO..."},
+    "apply_exbo_path": {"ru": "Применить путь EXBO", "en": "Apply EXBO Path"},
+    "cfg_path": {"ru": "Путь к CFG: {path}", "en": "CFG path: {path}"},
+    "exbo_path_configured": {"ru": "Путь EXBO настроен", "en": "EXBO path configured"},
+    "exbo_path_not_configured": {"ru": "Путь EXBO ещё не настроен", "en": "EXBO path is not configured yet"},
+    "language_label": {"ru": "Язык интерфейса", "en": "Interface language"},
+    "language_apply": {"ru": "Применить язык", "en": "Apply Language"},
+    "language_restart_note": {"ru": "Язык сохранён. Перезапусти приложение.", "en": "Language saved. Restart the app."},
+    "language_ru": {"ru": "Русский", "en": "Russian"},
+    "language_en": {"ru": "Английский", "en": "English"},
+    "markers_on_screen": {"ru": "Маркеров на экране", "en": "Markers on screen"},
+    "squares_after": {"ru": "Квадраты после", "en": "Squares after"},
+    "apply_optimization": {"ru": "Применить оптимизацию", "en": "Apply Optimization"},
+    "sidebar_width": {"ru": "Ширина боковой панели", "en": "Sidebar width"},
+    "rounding": {"ru": "Скругление", "en": "Rounding"},
+    "preview_alpha": {"ru": "Альфа превью", "en": "Preview alpha"},
+    "preview_radius_small": {"ru": "Радиус превью (малый)", "en": "Preview radius small"},
+    "preview_radius_big": {"ru": "Радиус превью (большой)", "en": "Preview radius big"},
+    "background_color": {"ru": "Цвет фона", "en": "Background color"},
+    "panel_color": {"ru": "Цвет панели", "en": "Panel color"},
+    "frame_color": {"ru": "Цвет рамки", "en": "Frame color"},
+    "accent_color": {"ru": "Акцентный цвет", "en": "Accent color"},
+    "save_ui_config": {"ru": "Сохранить UI-конфиг", "en": "Save UI Config"},
+    "help_title": {"ru": "Помощь", "en": "Help"},
+    "control_pan": {"ru": "ПКМ + drag: панорама", "en": "RMB + drag: pan"},
+    "control_zoom": {"ru": "Колесо мыши: зум к курсору", "en": "Mouse wheel: zoom to cursor"},
+    "control_select": {"ru": "ЛКМ: рамка выделения / перенос выбранных", "en": "LMB: selection box / drag selected"},
+    "control_delete": {"ru": "Delete: удалить выбранные метки", "en": "Delete: remove selected markers"},
+    "control_delete_image": {"ru": "Delete: удалить загруженную картинку, если она выбрана", "en": "Delete: remove loaded image when selected"},
+    "control_hide": {"ru": "H: скрыть/показать боковую панель", "en": "H: hide/show sidebar"},
+    "control_undo": {"ru": "Ctrl+Z / Ctrl+Y: undo / redo", "en": "Ctrl+Z / Ctrl+Y: undo / redo"},
+    "help_note_parse": {"ru": "Parse Image сразу добавляет метки в рабочий список.", "en": "Parse Image writes markers directly into the working list."},
+    "help_note_layers": {"ru": "Слои влияют на видимость меток на экране.", "en": "Layers affect marker visibility on screen."},
+    "help_note_ui": {"ru": "Настройки UI сохраняются в ui_config.json.", "en": "UI customization is stored in ui_config.json."},
+    "status_ready": {"ru": "Статус: Готово", "en": "Status: Ready"},
+    "progress_zero": {"ru": "Загрузка зон: 0 / 0", "en": "Zone loading: 0 / 0"},
+    "zoom_label": {"ru": "Зум: {scale:.3f}x", "en": "Zoom: {scale:.3f}x"},
+    "first_launch_setup": {"ru": "Первичная настройка", "en": "First launch setup"},
+    "onboarding_hint": {
+        "ru": "Выбери язык интерфейса и укажи папку EXBO. waypoints.cfg будет искаться внутри runtime/stalcraft/config.",
+        "en": "Choose the interface language and EXBO folder. The app will look for waypoints.cfg inside runtime/stalcraft/config.",
+    },
+    "exbo_setup_hint": {
+        "ru": "Выбери папку EXBO. Программа будет искать waypoints.cfg внутри runtime/stalcraft/config.",
+        "en": "Choose the EXBO folder. The app will look for waypoints.cfg inside runtime/stalcraft/config.",
+    },
+    "browse": {"ru": "Обзор...", "en": "Browse..."},
+    "use_this_path": {"ru": "Использовать этот путь", "en": "Use This Path"},
+    "onboarding_apply": {"ru": "Применить настройку", "en": "Continue"},
+    "browse_exbo_title": {"ru": "Выбрать папку EXBO", "en": "Choose EXBO folder"},
+    "browse_image_title": {"ru": "Выбрать изображение", "en": "Choose image"},
+    "status_ui_theme_applied": {"ru": "UI-тема применена", "en": "UI theme applied"},
+    "status_ui_config_saved": {"ru": "UI-конфиг сохранён: {name}", "en": "UI config saved: {name}"},
+    "status_language_saved": {"ru": "Язык сохранён: {lang_name}", "en": "Language saved: {lang_name}"},
+    "status_enter_exbo_path": {"ru": "Сначала укажи путь к папке EXBO", "en": "Enter EXBO folder path first"},
+    "status_exbo_path_error": {"ru": "Ошибка пути EXBO: {error}", "en": "EXBO path error: {error}"},
+    "status_exbo_folder_set": {"ru": "Папка EXBO задана: {path}", "en": "EXBO folder set: {path}"},
+    "status_choose_exbo_for_cfg": {"ru": "Укажи путь к папке EXBO, чтобы загрузить waypoints.cfg", "en": "Set EXBO folder path to load waypoints.cfg"},
+    "status_no_maps": {"ru": "PNG-карты не найдены", "en": "PNG maps not found"},
+    "status_icons_error": {"ru": "Иконки: {error}", "en": "Icons: {error}"},
+    "status_zone_load_error": {"ru": "Не удалось загрузить зону {zone}: {error}", "en": "Failed to load zone {zone}: {error}"},
+    "status_map_no_png_zones": {"ru": "{map_id}: нет PNG-зон", "en": "{map_id}: no PNG zones"},
+    "status_png_zone_read_error": {"ru": "Не удалось прочитать PNG-зону: {error}", "en": "Failed to read PNG zone: {error}"},
+    "status_map_selected": {"ru": "Карта: {map_id}", "en": "Map: {map_id}"},
+    "status_waypoint_not_selected": {"ru": "Метка не выбрана", "en": "No waypoint selected"},
+    "status_waypoint_deleted": {"ru": "Метка удалена из списка. Нажми Save changes для записи в файл", "en": "Waypoint removed from the list. Press Save changes to write it to the file"},
+    "status_waypoint_save_error": {"ru": "Ошибка записи файла меток: {error}", "en": "Failed to write waypoint file: {error}"},
+    "status_changes_saved": {"ru": "Изменения сохранены: {path}", "en": "Changes saved: {path}"},
+    "status_select_waypoints_first": {"ru": "Сначала выбери метки", "en": "Select waypoints first"},
+    "status_style_applied": {"ru": "Стиль применён к {count} меткам", "en": "Style applied to {count} markers"},
+    "status_image_removed": {"ru": "Загруженная картинка удалена", "en": "Loaded image removed"},
+    "status_undo_empty": {"ru": "Undo: история пуста", "en": "Undo: history is empty"},
+    "status_undo_done": {"ru": "Undo выполнен", "en": "Undo complete"},
+    "status_redo_empty": {"ru": "Redo: история пуста", "en": "Redo: history is empty"},
+    "status_redo_done": {"ru": "Redo выполнен", "en": "Redo complete"},
+    "status_optimization_applied": {"ru": "Оптимизация: screen {screen}, squares after {squares}", "en": "Optimization: screen {screen}, squares after {squares}"},
+    "status_image_not_found": {"ru": "Картинка не найдена: {path}", "en": "Image not found: {path}"},
+    "status_image_preview_load_error": {"ru": "Не удалось загрузить превью картинки: {error}", "en": "Failed to load image preview: {error}"},
+    "status_select_image_first": {"ru": "Сначала выбери картинку", "en": "Choose an image first"},
+    "status_open_map_first": {"ru": "Сначала открой карту", "en": "Open a map first"},
+    "status_waypoint_created": {"ru": "Создана новая метка", "en": "New waypoint created"},
+    "status_place_image_first": {"ru": "Сначала размести картинку на карте", "en": "Place the image on the map first"},
+    "status_no_pixels_after_cutoff": {"ru": "После отсечения в картинке не осталось подходящих пикселей", "en": "No valid pixels remained after cutoffs"},
+    "status_generated": {"ru": "Сгенерировано: {count} меток, res {width}x{height}, {mode}", "en": "Generated: {count} markers, res {width}x{height}, {mode}"},
+    "status_generation_buffer_cleared": {"ru": "Буфер генерации очищен", "en": "Generation buffer cleared"},
+    "status_generation_buffer_empty": {"ru": "Буфер генерации пуст", "en": "Generation buffer is empty"},
+    "status_baked": {"ru": "Запечено в основной список: {count} меток", "en": "Baked into main list: {count} markers"},
+    "status_select_waypoints_for_layer": {"ru": "Сначала выдели метки для слоя", "en": "Select markers for the layer first"},
+    "status_layer_added": {"ru": "Слой '{name}': добавлено {count}", "en": "Layer '{name}': added {count}"},
+    "status_map_with_region_hint": {"ru": "Карта: {map_id}. Выбери нужные регионы в списке слева.", "en": "Map: {map_id}. Choose needed regions from the list on the left."},
+    "progress_map_loaded": {"ru": "Зоны в памяти: {loaded} / {total}", "en": "Zones in memory: {loaded} / {total}"},
+    "progress_zone_memory": {"ru": "Зоны в памяти: {loaded} | видимых {visible} | включено {enabled} / {total}", "en": "Zones in memory: {loaded} | visible {visible} | enabled {enabled} / {total}"},
+    "status_no_map_selected": {"ru": "Карта не выбрана", "en": "No map selected"},
+    "footer": {"ru": "{map_id} | zones {loaded}/{total} | wps {all_count} total / {visible_count} visible | mode {mode} | interactive {interactive}", "en": "{map_id} | zones {loaded}/{total} | wps {all_count} total / {visible_count} visible | mode {mode} | interactive {interactive}"},
+    "interactive_on": {"ru": "вкл", "en": "on"},
+    "interactive_off": {"ru": "выкл", "en": "off"},
+    "render_mode_none": {"ru": "нет", "en": "none"},
+    "render_mode_icons": {"ru": "иконки", "en": "icons"},
+    "render_mode_squares": {"ru": "квадраты", "en": "squares"},
+    "render_mode_points": {"ru": "точки", "en": "points"},
+    "mode_contour": {"ru": "контур", "en": "contour"},
+    "mode_fill": {"ru": "заливка", "en": "fill"},
+    "source_info": {"ru": "Источник: {name} | auto res {width}x{height} | drag/resize на карте", "en": "Source: {name} | auto res {width}x{height} | drag/resize on map"},
+}
+
+
+TRANSLATIONS["reset_optimization_defaults"] = {
+    "ru": "Сбросить оптимизацию к дефолту",
+    "en": "Reset optimization to defaults",
+}
+TRANSLATIONS["status_optimization_reset"] = {
+    "ru": "Оптимизация сброшена: screen {screen}, squares after {squares}",
+    "en": "Optimization reset: screen {screen}, squares after {squares}",
+}
+
+
+TRANSLATIONS["section_parser_advanced"] = {
+    "ru": "Тонкая настройка парсера",
+    "en": "Advanced parser tuning",
+}
+TRANSLATIONS["section_view_calibration"] = {
+    "ru": "Калибровка зума",
+    "en": "Zoom calibration",
+}
+TRANSLATIONS["image_contrast"] = {
+    "ru": "Контраст маски",
+    "en": "Mask contrast",
+}
+TRANSLATIONS["image_blur_radius"] = {
+    "ru": "Размытие перед парсингом",
+    "en": "Pre-parse blur",
+}
+TRANSLATIONS["image_mask_grow_shrink"] = {
+    "ru": "Расширить / сжать маску",
+    "en": "Grow / shrink mask",
+}
+TRANSLATIONS["image_noise_cleanup"] = {
+    "ru": "Очистка шума",
+    "en": "Noise cleanup",
+}
+TRANSLATIONS["image_contour_edge_threshold"] = {
+    "ru": "Порог контура",
+    "en": "Contour threshold",
+}
+TRANSLATIONS["image_parser_advanced_hint"] = {
+    "ru": "Контраст и blur влияют на форму маски, очистка шума убирает случайные точки, grow/shrink позволяет тонко расширять или сжимать результат.",
+    "en": "Contrast and blur affect mask shape, noise cleanup removes stray dots, and grow/shrink lets you finely expand or shrink the result.",
+}
+TRANSLATIONS["map_zoom_multiplier"] = {
+    "ru": "Зум карты под игру",
+    "en": "Map zoom match",
+}
+TRANSLATIONS["marker_zoom_multiplier"] = {
+    "ru": "Зум маркеров",
+    "en": "Marker zoom scale",
+}
+TRANSLATIONS["apply_view_calibration"] = {
+    "ru": "Применить калибровку зума",
+    "en": "Apply zoom calibration",
+}
+TRANSLATIONS["status_view_calibration_applied"] = {
+    "ru": "Калибровка зума применена: map {map_zoom:.2f}, markers {marker_zoom:.2f}",
+    "en": "Zoom calibration applied: map {map_zoom:.2f}, markers {marker_zoom:.2f}",
+}
+
+TRANSLATIONS["zone_north_zone"] = {
+    "ru": "Северная зона",
+    "en": "North Zone",
+}
+TRANSLATIONS["zone_south_zone"] = {
+    "ru": "Южная зона",
+    "en": "South Zone",
+}
+TRANSLATIONS["zone_wild_north"] = {
+    "ru": "Дикий север",
+    "en": "Wild North",
+}
+TRANSLATIONS["zone_sov_hoz_labirint"] = {
+    "ru": "Совхоз + Лабиринт",
+    "en": "Sovkhoz + Labirint",
+}
+TRANSLATIONS["zone_nizina_1"] = {
+    "ru": "Низина 1",
+    "en": "Nizina 1",
+}
+TRANSLATIONS["zone_nizina_2"] = {
+    "ru": "Низина 2",
+    "en": "Nizina 2",
+}
+TRANSLATIONS["zone_potasa"] = {
+    "ru": "Потаса",
+    "en": "Potasa",
+}
+TRANSLATIONS["zone_boral"] = {
+    "ru": "Бораль",
+    "en": "Boral",
+}
+TRANSLATIONS["zone_potasa_kvartaly"] = {
+    "ru": "Потасовка кварталы",
+    "en": "Kvartaly",
+}
+TRANSLATIONS["zone_hvoynik"] = {
+    "ru": "Хвойник",
+    "en": "Hvoynik",
+}
+TRANSLATIONS["zone_tur_berda"] = {
+    "ru": "Тур Берда",
+    "en": "Tur berda",
+}
+TRANSLATIONS["zone_lima"] = {
+    "ru": "Лиманск",
+    "en": "Limansk",
+}
+
+TRANSLATIONS["parser_mode"] = {
+    "ru": "Режим парсинга",
+    "en": "Parser mode",
+}
+TRANSLATIONS["parser_mode_fill"] = {
+    "ru": "Заливка по маске",
+    "en": "Mask fill",
+}
+TRANSLATIONS["parser_mode_silhouette"] = {
+    "ru": "Контур силуэта",
+    "en": "Silhouette contour",
+}
+TRANSLATIONS["parser_mode_detail_edges"] = {
+    "ru": "Контур деталей",
+    "en": "Detail edges",
+}
+
+def translate(language: str, key: str, **kwargs) -> str:
+    entry = TRANSLATIONS.get(key)
+    if entry is None:
+        fallback = key
+    else:
+        fallback = entry.get(language) or entry.get("en") or key
+    if kwargs:
+        try:
+            return fallback.format(**kwargs)
+        except Exception:
+            return fallback
+    return fallback
