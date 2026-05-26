@@ -39,23 +39,22 @@ jobs:
 
       - name: Package map pack (ZIP)
         run: |
-          Write-Host "=== Starting map pack creation ==="
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          
           Push-Location .\assets\maps
           Compress-Archive -Path .\zone_pack_png -DestinationPath "$env:GITHUB_WORKSPACE\dist\zone_pack_png.zip" -Force
           Pop-Location
-          
-          Write-Host "ZIP created: $(Get-ChildItem dist\zone_pack_png.zip)"
+          Write-Host "ZIP created successfully: $(Get-Item dist\zone_pack_png.zip | Select-Object Length)"
 
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v7
+        continue-on-error: true
         with:
           name: Waypoint-Editor-windows
           path: dist/Waypoint-Editor.exe
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v7
+        continue-on-error: true
         with:
           name: zone_pack_png
           path: dist/zone_pack_png.zip
@@ -69,20 +68,17 @@ jobs:
           $exePath = "dist/Waypoint-Editor.exe"
           $zipPath = "dist/zone_pack_png.zip"
 
-          Write-Host "=== Attaching assets to release: $env:TAG ==="
+          Write-Host "=== Trying to attach assets to $env:TAG ==="
 
-          if (-not (Test-Path $exePath)) { Write-Error "EXE not found!"; exit 1 }
-          if (-not (Test-Path $zipPath)) { Write-Error "ZIP not found!"; exit 1 }
+          if (-not (Test-Path $exePath)) { Write-Host "EXE not found!"; exit 1 }
+          if (-not (Test-Path $zipPath)) { Write-Host "ZIP not found!"; exit 1 }
 
           gh release view $env:TAG *> $null 2>&1
           if ($LASTEXITCODE -ne 0) {
-            Write-Host "Release not found → Creating..."
+            Write-Host "Creating new release..."
             gh release create $env:TAG $exePath $zipPath --title $env:TAG --notes "Automated Windows one-file build."
-          } 
-          else {
-            Write-Host "Release exists → Uploading assets..."
+          } else {
+            Write-Host "Release exists, uploading assets..."
             gh release upload $env:TAG $exePath --clobber
             gh release upload $env:TAG $zipPath --clobber
           }
-          
-          Write-Host "=== Done ==="
