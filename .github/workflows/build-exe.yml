@@ -16,9 +16,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v6
+      - name: Setup Python
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: "pip"
@@ -38,6 +40,10 @@ jobs:
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           Compress-Archive -Path .\assets\maps\zone_pack_png -DestinationPath .\dist\zone_pack_png.zip -Force
 
+      - name: Debug dist (IMPORTANT)
+        run: |
+          Get-ChildItem dist -Recurse
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -52,22 +58,46 @@ jobs:
         run: |
           $tag = "${{ github.event.release.tag_name }}"
 
-          $exe = "dist/Waypoint-Editor.exe"
-          $zip = "dist/zone_pack_png.zip"
+          Write-Host "Release tag: $tag"
 
-          Write-Host "Syncing release: $tag"
+          # Проверяем что файлы реально существуют
+          if (!(Test-Path "dist")) {
+            Write-Host "dist folder not found"
+            exit 1
+          }
+
+          $files = Get-ChildItem dist -File
+          Write-Host "Files in dist:"
+          $files
+
+          $exe = Get-ChildItem dist -Recurse -Filter *.exe | Select-Object -First 1
+          $zip = Get-ChildItem dist -Recurse -Filter *.zip | Select-Object -First 1
+
+          if (-not $exe) {
+            Write-Host "EXE NOT FOUND"
+            exit 1
+          }
+
+          if (-not $zip) {
+            Write-Host "ZIP NOT FOUND"
+            exit 1
+          }
 
           $assets = gh release view $tag --json assets --jq '.assets[].name' 2>$null
 
-          if (-not $assets) {
-            gh release upload $tag $exe $zip --clobber
-            exit 0
+          Write-Host "Existing assets:"
+          Write-Host $assets
+
+          if ($assets -notmatch $exe.Name) {
+            Write-Host "Uploading EXE..."
+            gh release upload $tag $exe.FullName --clobber
+          } else {
+            Write-Host "EXE already exists"
           }
 
-          if ($assets -notmatch "Waypoint-Editor.exe") {
-            gh release upload $tag $exe --clobber
-          }
-
-          if ($assets -notmatch "zone_pack_png.zip") {
-            gh release upload $tag $zip --clobber
+          if ($assets -notmatch $zip.Name) {
+            Write-Host "Uploading ZIP..."
+            gh release upload $tag $zip.FullName --clobber
+          } else {
+            Write-Host "ZIP already exists"
           }
