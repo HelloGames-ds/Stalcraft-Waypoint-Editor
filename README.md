@@ -31,7 +31,7 @@ Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint 
 
 ## Features
 
-- Load map zones from `assets/maps/zone_pack_png`
+- Load map zones from a downloadable `zone_pack_png` map pack
 - Enable only the regions you need instead of loading the whole map at once
 - Load and save `waypoints.cfg`
 - Create, move, delete, rename, recolor, and re-icon waypoints
@@ -63,8 +63,9 @@ py -3 -m pip install -r requirements.txt
 ### Option 1: Run the packaged `.exe`
 
 - Open the repository `Releases` page
-- Download `Stalcraft-Waypoint-Editor.exe` from the latest release assets
+- Download `Waypoint-Editor.exe` from the latest release assets
 - Run the executable
+- On first launch, download the map pack when the app asks for it
 
 ### Option 2: Run from source
 
@@ -82,6 +83,7 @@ On first start the app asks for:
 
 1. Interface language
 2. Path to the `EXBO` folder
+3. Map pack download, if no local map pack is found
 
 Expected folder example:
 
@@ -111,6 +113,12 @@ This includes:
 - `.cache/`
 
 These files are user-local, are not stored next to the executable, and should usually stay out of the repository.
+
+The packaged `.exe` does not bundle map images directly. If maps are missing, the app downloads `zone_pack_png.zip` from the latest GitHub Release and extracts it into:
+```text
+%APPDATA%\Stalcraft-Waypoint-Editor\assets\maps\zone_pack_png
+```
+
 
 ---
 
