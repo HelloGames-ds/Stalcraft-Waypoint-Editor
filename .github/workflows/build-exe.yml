@@ -1,4 +1,4 @@
-name: Build ZIP Package
+name: Build Windows App
 
 on:
   workflow_dispatch:
@@ -14,25 +14,42 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Create package folder
-        run: |
-          New-Item -ItemType Directory -Force -Path package | Out-Null
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
 
-      - name: Copy project files
+      - name: Install dependencies
         run: |
-          robocopy . package /E /XD .git .github /NFL /NDL /NJH /NJS
-          exit 0
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
 
-      - name: Create ZIP
+      - name: Build EXE
         run: |
-          Compress-Archive -Path .\package\* -DestinationPath .\build.zip -Force
+          pyinstaller --clean --noconfirm simplemapper_runtime.spec
 
-      - name: Upload ZIP artifact
+      - name: Prepare ZIP (maps pack)
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Compress-Archive -Path .\assets\maps\zone_pack_png -DestinationPath .\dist\zone_pack_png.zip -Force
+
+      - name: Upload EXE artifact
         uses: actions/upload-artifact@v7
         with:
-          name: full-project-zip
-          path: build.zip
+          name: app-exe
+          path: |
+            dist/**/*.exe
+          if-no-files-found: error
+
+      - name: Upload maps ZIP artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: maps-pack
+          path: |
+            dist/*.zip
           if-no-files-found: error
