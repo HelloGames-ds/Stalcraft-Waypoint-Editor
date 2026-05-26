@@ -2579,6 +2579,8 @@ class SimpleMapperDesktopApp(
             self.select_map(default_map)
         else:
             self.set_status(self.t("status_no_maps"))
+            if not (self.language_setup_required or self.exbo_setup_required):
+                self.show_map_pack_modal()
 
     def tick(self) -> None:
         self.frame_index += 1

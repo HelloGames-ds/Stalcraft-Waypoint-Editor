@@ -44,6 +44,13 @@ jobs:
         run: |
           pyinstaller --clean --noconfirm --log-level DEBUG simplemapper_runtime.spec *>&1 | Tee-Object -FilePath pyinstaller-build.log
 
+      - name: Package map pack
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Push-Location .\assets\maps
+          Compress-Archive -Path .\zone_pack_png -DestinationPath "$env:GITHUB_WORKSPACE\dist\zone_pack_png.zip" -Force
+          Pop-Location
+
       - name: Upload build log on failure
         if: failure()
         uses: actions/upload-artifact@v7
@@ -55,8 +62,15 @@ jobs:
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v7
         with:
-          name: Stalcraft-Waypoint-Editor-windows
-          path: dist/Stalcraft-Waypoint-Editor.exe
+          name: Waypoint-Editor-windows
+          path: dist/Waypoint-Editor.exe
+          if-no-files-found: error
+
+      - name: Upload map pack artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: zone-pack
+          path: dist/zone_pack_png.zip
           if-no-files-found: error
 
       - name: Attach EXE to GitHub Release
@@ -65,13 +79,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "$env:GITHUB_REF_NAME"
-          $asset = "dist/Stalcraft-Waypoint-Editor.exe"
+          $asset = "dist/Waypoint-Editor.exe"
+          $mapPack = "dist/zone_pack_png.zip"
           $notes = "Automated Windows one-file build."
 
           gh release view $tag *> $null
           if ($LASTEXITCODE -ne 0) {
-            gh release create $tag $asset --title $tag --notes $notes
+            gh release create $tag $asset $mapPack --title $tag --notes $notes
           }
           else {
             gh release upload $tag $asset --clobber
+            gh release upload $tag $mapPack --clobber
           }

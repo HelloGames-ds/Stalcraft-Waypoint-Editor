@@ -2,7 +2,7 @@
 
 Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint editing, image-to-marker parsing, and layer support.
 
-This project is focused on local map work: editing `waypoints.cfg`, organizing markers, and placing waypoint shapes from reference images on top of zone PNG packs.
+This project is focused on local map work: editing `waypoints.cfg`, organizing markers, and placing waypoint shapes from reference images on top of zone packs. The Windows `.exe` is built without bundled map images; maps are distributed as a separate release asset and downloaded on first launch when needed.
 
 ---
 
@@ -20,7 +20,7 @@ This project is focused on local map work: editing `waypoints.cfg`, organizing m
 
 ## Features
 
-- Load map zones from `assets/maps/zone_pack_png`
+- Load map zones from a downloadable `zone_pack_png` map pack
 - Enable only the regions you need instead of loading the whole map at once
 - Load and save `waypoints.cfg`
 - Create, move, delete, rename, recolor, and re-icon waypoints
@@ -49,6 +49,15 @@ py -3 -m pip install -r requirements.txt
 
 ## Run
 
+### Option 1: Run the packaged `.exe`
+
+- Open the repository `Releases` page
+- Download `Waypoint-Editor.exe` from the latest release assets
+- Run the executable
+- On first launch, download the map pack when the app asks for it
+
+### Option 2: Run from source
+
 From the project root:
 
 ```powershell
@@ -63,6 +72,7 @@ On first start the app asks for:
 
 1. Interface language
 2. Path to the `EXBO` folder
+3. Map pack download, if no local map pack is found
 
 Expected folder example:
 
@@ -76,14 +86,28 @@ The app then looks for:
 <EXBO>\runtime\stalcraft\config\waypoints.cfg
 ```
 
-Local runtime files created by the app:
+Local runtime files created by the app are stored in:
+
+```text
+%APPDATA%\Stalcraft-Waypoint-Editor
+```
+
+This includes:
 
 - `app_config.json`
+- `settings.json`
 - `ui_config.json`
 - `layers.json`
 - `backups/`
+- `.cache/`
 
-These files are user-local and should usually stay out of the repository.
+These files are user-local, are not stored next to the executable, and should usually stay out of the repository.
+
+The packaged `.exe` does not bundle map images directly. If maps are missing, the app downloads `zone_pack_png.zip` from the latest GitHub Release and extracts it into:
+
+```text
+%APPDATA%\Stalcraft-Waypoint-Editor\assets\maps\zone_pack_png
+```
 
 ---
 
@@ -108,8 +132,25 @@ These files are user-local and should usually stay out of the repository.
 - `PyGUI/layers_mixin.py` - layer system
 - `PyGUI/i18n.py` - translations
 - `simplemapper_core.py` - cfg IO, asset discovery, and map scanning
-- `assets/maps/zone_pack_png` - zone PNG pack
+- `assets/maps/zone_pack_png` - source map pack used for release packaging
 - `assets/waypoint_icons` - waypoint icons
+- `.github/workflows/build-exe.yml` - GitHub Actions workflow for Windows `.exe` builds
+- `simplemapper_runtime.spec` - PyInstaller spec for one-file packaging
+
+---
+
+## Build EXE
+
+The repository is configured to build a standalone Windows `.exe` through GitHub Actions.
+
+- Push changes to `main`
+- Open the latest `Build Windows EXE` workflow run in `Actions`
+- Download the artifact containing `Waypoint-Editor.exe`
+
+For versioned releases, push a tag such as `v1.2.0`. The workflow attaches both files to the GitHub Release:
+
+- `Waypoint-Editor.exe`
+- `zone_pack_png.zip`
 
 ---
 

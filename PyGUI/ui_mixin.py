@@ -354,6 +354,7 @@ class UIBuildMixin:
         label_updates = {
             "main_window": self.t("app_title"),
             "onboarding_modal": self.t("first_launch_setup"),
+            "map_pack_modal": self.t("map_pack_required_title"),
             "tab_main": self.t("tab_main"),
             "tab_image": self.t("tab_image"),
             "tab_layers": self.t("tab_layers"),
@@ -400,6 +401,8 @@ class UIBuildMixin:
             "add_selected_to_layer_button": self.t("add_selected_to_layer"),
             "onboarding_browse_button": self.t("browse"),
             "onboarding_apply_button": self.t("onboarding_apply"),
+            "map_pack_download_button": self.t("map_pack_download"),
+            "map_pack_later_button": self.t("map_pack_later"),
         }
         for tag, label in label_updates.items():
             if dpg.does_item_exist(tag):
@@ -434,6 +437,8 @@ class UIBuildMixin:
             "onboarding_hint_text": self.t("onboarding_hint"),
             "onboarding_language_label_text": self.t("language_label"),
             "onboarding_exbo_label_text": self.t("exbo_folder"),
+            "map_pack_title_text": self.t("map_pack_required_title"),
+            "map_pack_hint_text": self.t("map_pack_required_hint"),
             "language_restart_note_text": self.t("language_restart_note"),
             "optimization_markers_label": self.t("markers_on_screen"),
             "optimization_squares_label": self.t("squares_after"),
@@ -502,6 +507,8 @@ class UIBuildMixin:
             dpg.set_viewport_title(self.t("app_title"))
         if dpg.does_item_exist("onboarding_modal") and dpg.is_item_shown("onboarding_modal"):
             self.center_modal("onboarding_modal", 620, 300)
+        if dpg.does_item_exist("map_pack_modal") and dpg.is_item_shown("map_pack_modal"):
+            self.center_modal("map_pack_modal", 620, 220)
 
     def create_onboarding_modal(self) -> None:
         if dpg.does_item_exist("onboarding_modal"):
@@ -538,6 +545,67 @@ class UIBuildMixin:
                     width=-1,
                     callback=self.apply_onboarding_from_ui,
                 )
+
+    def create_map_pack_modal(self) -> None:
+        if dpg.does_item_exist("map_pack_modal"):
+            return
+        with dpg.window(
+            tag="map_pack_modal",
+            label=self.t("map_pack_required_title"),
+            modal=True,
+            no_resize=True,
+            no_collapse=True,
+            show=False,
+            width=620,
+            height=220,
+        ):
+            dpg.add_text(self.t("map_pack_required_title"), color=(255, 221, 120), tag="map_pack_title_text")
+            dpg.add_text(self.t("map_pack_required_hint"), tag="map_pack_hint_text", wrap=560)
+            dpg.add_spacer(height=10)
+            with dpg.group(horizontal=True):
+                dpg.add_button(
+                    label=self.t("map_pack_download"),
+                    tag="map_pack_download_button",
+                    width=220,
+                    callback=self.download_map_pack_from_ui,
+                )
+                dpg.add_button(
+                    label=self.t("map_pack_later"),
+                    tag="map_pack_later_button",
+                    width=-1,
+                    callback=lambda *_: dpg.configure_item("map_pack_modal", show=False),
+                )
+
+    def show_map_pack_modal(self) -> None:
+        self.show_centered_modal("map_pack_modal", 620, 220)
+
+    def maybe_prompt_for_map_pack(self) -> None:
+        if self.core.get_maps(reload=True):
+            return
+        self.set_status(self.t("status_no_maps"))
+        self.show_map_pack_modal()
+
+    def download_map_pack_from_ui(self, sender=None, app_data=None, user_data=None) -> None:
+        if dpg.does_item_exist("map_pack_download_button"):
+            dpg.configure_item("map_pack_download_button", enabled=False)
+        self.set_status(self.t("status_map_pack_downloading"))
+        try:
+            installed_path = self.core.download_map_pack()
+        except Exception as error:
+            if dpg.does_item_exist("map_pack_download_button"):
+                dpg.configure_item("map_pack_download_button", enabled=True)
+            self.set_status(self.t("status_map_pack_error", error=error))
+            return
+
+        if dpg.does_item_exist("map_pack_modal"):
+            dpg.configure_item("map_pack_modal", show=False)
+        if dpg.does_item_exist("map_pack_download_button"):
+            dpg.configure_item("map_pack_download_button", enabled=True)
+        self.set_status(self.t("status_map_pack_ready", path=installed_path))
+        self.refresh_map_combo()
+        default_map = self.choose_default_map()
+        if default_map:
+            self.select_map(default_map)
 
     def sync_exbo_inputs(self, value: str) -> None:
         if dpg.does_item_exist("exbo_dir_input"):
@@ -605,6 +673,8 @@ class UIBuildMixin:
         if dpg.does_item_exist("onboarding_modal"):
             dpg.configure_item("onboarding_modal", show=False)
         self.set_status(self.t("status_exbo_folder_set", path=chosen_dir))
+        if not self.core.get_maps(reload=True):
+            self.show_map_pack_modal()
 
     def apply_exbo_dir_from_ui(self, sender=None, app_data=None, user_data=None) -> None:
         source_tag = str(user_data or "exbo_dir_input")
@@ -627,6 +697,8 @@ class UIBuildMixin:
         if dpg.does_item_exist("onboarding_modal"):
             dpg.configure_item("onboarding_modal", show=False)
         self.set_status(self.t("status_exbo_folder_set", path=chosen_dir))
+        if not self.core.get_maps(reload=True):
+            self.show_map_pack_modal()
 
     def load_ui_config(self) -> dict:
         defaults = {
@@ -1229,6 +1301,7 @@ class UIBuildMixin:
         self.configure_image_settings_visibility()
         self.update_image_marker_estimate(None)
         self.create_onboarding_modal()
+        self.create_map_pack_modal()
         self.refresh_language_settings_ui()
         
         # Установка иконки для таскбара и топбара
