@@ -5,8 +5,8 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "*"
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -16,11 +16,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: "pip"
@@ -40,35 +38,31 @@ jobs:
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           Compress-Archive -Path .\assets\maps\zone_pack_png -DestinationPath .\dist\zone_pack_png.zip -Force
 
-      - name: Upload build artifacts (always)
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
           name: build-output
-          path: |
-            dist/*.exe
-            dist/*.zip
+          path: dist/*
 
-      - name: Release sync (create or update assets)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload to GitHub Release
+        if: github.event_name == 'release'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
-          $tag = "$env:GITHUB_REF_NAME"
+          $tag = "${{ github.event.release.tag_name }}"
 
           $exe = "dist/Waypoint-Editor.exe"
           $zip = "dist/zone_pack_png.zip"
 
-          # получить список assets релиза
+          Write-Host "Syncing release: $tag"
+
           $assets = gh release view $tag --json assets --jq '.assets[].name' 2>$null
 
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "Release not found -> creating"
-            gh release create $tag $exe $zip --title $tag --notes "Automated build"
+          if (-not $assets) {
+            gh release upload $tag $exe $zip --clobber
             exit 0
           }
-
-          Write-Host "Existing assets: $assets"
 
           if ($assets -notmatch "Waypoint-Editor.exe") {
             gh release upload $tag $exe --clobber
