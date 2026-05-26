@@ -65,7 +65,7 @@ jobs:
           path: dist/Waypoint-Editor.exe
           if-no-files-found: error
 
-      - name: Attach assets to GitHub Release (only if no assets exist)
+      - name: Attach assets to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
@@ -74,20 +74,36 @@ jobs:
           $exePath = "dist/Waypoint-Editor.exe"
           $zipPath = "dist/zone_pack_png.zip"
 
-          # Проверяем, существует ли релиз
+          Write-Host "=== Checking release: $env:TAG ==="
+
           gh release view $env:TAG *> $null 2>&1
           if ($LASTEXITCODE -ne 0) {
-            Write-Host "Release $env:TAG does not exist. Creating..."
-            gh release create $env:TAG $exePath $zipPath --title $env:TAG --notes "Automated Windows build."
-            exit 0
-          }
-          $assets = gh release view $env:TAG --json assets -q '.assets[]?.name'
-          if ($assets) {
-            Write-Host "Release $env:TAG already has assets. Skipping upload."
+            Write-Host "Release not found → Creating new release"
+            gh release create $env:TAG $exePath $zipPath --title $env:TAG --notes "Automated Windows one-file build."
             exit 0
           }
 
-          # Если assets нет — загружаем
-          Write-Host "Release $env:TAG exists but has no assets. Uploading..."
-          gh release upload $env:TAG $exePath --clobber
-          gh release upload $env:TAG $zipPath --clobber
+          $assets = gh release view $env:TAG --json assets --jq '.assets[].name' 2>$null
+
+          $hasExe = $false
+          $hasZip = $false
+
+          if ($assets) {
+            $hasExe = $assets -match "Waypoint-Editor.exe"
+            $hasZip = $assets -match "zone_pack_png.zip"
+          }
+
+          if ($hasExe -and $hasZip) {
+            Write-Host "Both assets already exist → Skipping upload"
+          }
+          else {
+            Write-Host "Uploading missing assets..."
+            if (-not $hasExe) {
+              Write-Host "Uploading EXE..."
+              gh release upload $env:TAG $exePath --clobber
+            }
+            if (-not $hasZip) {
+              Write-Host "Uploading ZIP..."
+              gh release upload $env:TAG $zipPath --clobber
+            }
+          }
