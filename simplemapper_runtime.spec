@@ -6,7 +6,8 @@ from pathlib import Path
 project_root = Path(os.getcwd()).resolve()
 
 datas = [
-    (str(project_root / "assets"), "assets"),
+    (str(project_root / "assets" / "app.ico"), "assets"),
+    (str(project_root / "assets" / "waypoint_icons"), "assets/waypoint_icons"),
 ]
 
 a = Analysis(

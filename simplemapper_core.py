@@ -6,6 +6,8 @@ import re
 import shutil
 import sys
 import tempfile
+import urllib.request
+import zipfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -29,6 +31,7 @@ WAYPOINTS_PATH = USER_DATA_DIR / "waypoints.cfg"
 APP_CONFIG_PATH = USER_DATA_DIR / "app_config.json"
 WAYPOINT_ICONS_OL_PATH = RESOURCE_ROOT / "atlas_map_waypoint.ol"
 WAYPOINT_ATLAS_JSON_PATH = RESOURCE_ROOT / "atlas_map_waypoint.sheet.json"
+MAP_PACK_DOWNLOAD_URL = "https://github.com/HelloGames-ds/Stalcraft-Waypoint-Editor/releases/latest/download/zone_pack_png.zip"
 
 TILE_PATTERN = re.compile(r"^r\.(-?\d+)\.(-?\d+)\.(ol|mic)$")
 WAYPOINT_ICON_FRAME_KEYS: list[str] = [
@@ -125,6 +128,8 @@ class SimpleMapperCore:
         self.pda_dir = self.resource_root / "pda"
         self.cache_dir = self.user_data_dir / ".cache" / "tiles"
         self.waypoint_icons_cache_dir = self.user_data_dir / ".cache" / "waypoint_icons"
+        self.user_maps_dir = self.user_data_dir / "assets" / "maps"
+        self.map_pack_download_url = MAP_PACK_DOWNLOAD_URL
         self.waypoint_icons_static_dir = self.resource_root / "assets" / "waypoint_icons"
         self.backups_dir = self.user_data_dir / "backups" / "waypoints"
         self.app_config_path = self.user_data_dir / "app_config.json"
@@ -246,10 +251,44 @@ class SimpleMapperCore:
 
         return formats
 
+    def get_user_maps_dir(self) -> Path:
+        return self.user_maps_dir
+
+    def get_map_pack_dir(self) -> Path:
+        return self.user_maps_dir / "zone_pack_png"
+
+    def has_downloaded_map_pack(self) -> bool:
+        manifest_path = self.get_map_pack_dir() / "zone_manifest.json"
+        zones_dir = self.get_map_pack_dir() / "zones_png"
+        return manifest_path.exists() and zones_dir.exists()
+
+    def download_map_pack(self) -> Path:
+        self.user_maps_dir.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            archive_path = Path(temp_dir) / "zone_pack_png.zip"
+            urllib.request.urlretrieve(self.map_pack_download_url, archive_path)
+            self.extract_map_pack_archive(archive_path, self.user_maps_dir)
+        self._maps_cache = None
+        return self.get_map_pack_dir()
+
+    def extract_map_pack_archive(self, archive_path: Path, target_dir: Path) -> None:
+        target_dir = target_dir.resolve()
+        with zipfile.ZipFile(archive_path) as archive:
+            for member in archive.infolist():
+                if member.is_dir():
+                    continue
+                target_path = (target_dir / member.filename).resolve()
+                if target_dir not in target_path.parents and target_path != target_dir:
+                    raise ValueError("Unsafe path in map pack archive")
+                target_path.parent.mkdir(parents=True, exist_ok=True)
+                with archive.open(member) as source, target_path.open("wb") as destination:
+                    shutil.copyfileobj(source, destination)
+
     def scan_zone_png_maps(self) -> Dict[str, MapInfo]:
         maps: Dict[str, MapInfo] = {}
         search_roots: list[Path] = []
         for candidate in (
+            self.user_maps_dir,
             self.resource_root / "assets" / "maps",
             self.resource_root / "zone_exports",
             self.root_dir / "assets" / "maps",

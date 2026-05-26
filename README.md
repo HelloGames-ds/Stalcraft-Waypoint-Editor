@@ -31,7 +31,7 @@ Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint 
 
 ## Features
 
-- Load map zones from `assets/maps/zone_pack_png`
+- Load map zones from a downloadable `zone_pack_png` map pack
 - Enable only the regions you need instead of loading the whole map at once
 - Load and save `waypoints.cfg`
 - Create, move, delete, rename, recolor, and re-icon waypoints
@@ -82,6 +82,7 @@ On first start the app asks for:
 
 1. Interface language
 2. Path to the `EXBO` folder
+3. Map pack download, if no local map pack is found
 
 Expected folder example:
 

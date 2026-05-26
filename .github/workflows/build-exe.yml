@@ -44,6 +44,13 @@ jobs:
         run: |
           pyinstaller --clean --noconfirm --log-level DEBUG simplemapper_runtime.spec *>&1 | Tee-Object -FilePath pyinstaller-build.log
 
+      - name: Package map pack
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Push-Location .\assets\maps
+          Compress-Archive -Path .\zone_pack_png -DestinationPath "$env:GITHUB_WORKSPACE\dist\zone_pack_png.zip" -Force
+          Pop-Location
+
       - name: Upload build log on failure
         if: failure()
         uses: actions/upload-artifact@v7
@@ -70,8 +77,9 @@ jobs:
 
           gh release view $tag *> $null
           if ($LASTEXITCODE -ne 0) {
-            gh release create $tag $asset --title $tag --notes $notes
+            gh release create $tag $asset $mapPack --title $tag --notes $notes
           }
           else {
             gh release upload $tag $asset --clobber
+            gh release upload $tag $mapPack --clobber
           }
