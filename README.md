@@ -150,16 +150,6 @@ The packaged `.exe` does not bundle map images directly. If maps are missing, th
 
 ---
 
-## Build EXE
-
-The repository is configured to build a standalone Windows `.exe` through GitHub Actions.
-
-- Push changes to `main`
-- Open the latest `Build Windows EXE` workflow run in `Actions`
-- Download the artifact containing `Stalcraft-Waypoint-Editor.exe`
-
----
-
 ## Credits
 
 Special thanks to [TeamDima](https://github.com/DeTTK) for the original program.
