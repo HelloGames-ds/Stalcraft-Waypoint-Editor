@@ -1,26 +1,37 @@
+<div align="center">
+
 # Stalcraft Waypoint Editor
 
-Десктопный редактор вейпоинтов для **Stalcraft** с загрузкой карты по зонам, редактированием маркеров, парсингом изображений в маркеры и поддержкой слоёв.
+🌐 **Доступно на:** [🇬🇧 English](README.md) | 🇷🇺 **Русский**
 
-Этот проект ориентирован на локальную работу с картой: редактирование `waypoints.cfg`, организация маркеров и размещение форм вейпоинтов по референсным изображениям поверх наборов зон. Готовый `.exe` собирается без карт внутри, а пакет карт распространяется отдельным файлом релиза и скачивается при первом запуске, если его ещё нет.
+</div>
+
+<img wifth="128" height="128" alt="icon" src="https://github.com/HelloGames-ds/Stalcraft-Waypoint-Editor/blob/main/assets/app.ico" />
+
+---
+
+Десктопный редактор вейпоинтов для **Stalcraft** с загрузкой карты по зонам, редактированием маркеров, парсингом изображений в маркеры и поддержкой слоёв.
 
 ---
 
 ## Скриншоты
 
-<img width="632" height="312" alt="Image" src="https://github.com/user-attachments/assets/1af8c97f-be9f-486a-af7c-c7478d5eebe4" />
-
-<img width="1920" height="1017" alt="Image" src="https://github.com/user-attachments/assets/2f3c2438-d8b4-46f2-9606-9145e15e78a3" />
-
-<img width="1920" height="1017" alt="Image" src="https://github.com/user-attachments/assets/3e49643e-7501-45d2-874e-248d64b5aca0" />
-
-<img width="914" height="849" alt="Image" src="https://github.com/user-attachments/assets/29f151f7-c518-4ce6-8734-3dd3b859ea18" />
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/1af8c97f-be9f-486a-af7c-c7478d5eebe4" alt="Image" width="122%"></td>
+    <td><img src="https://github.com/user-attachments/assets/2f3c2438-d8b4-46f2-9606-9145e15e78a3" alt="Image" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/3e49643e-7501-45d2-874e-248d64b5aca0" alt="Image" width="100%"></td>
+    <td><img src="https://github.com/user-attachments/assets/29f151f7-c518-4ce6-8734-3dd3b859ea18" alt="Image" width="100%"></td>
+  </tr>
+</table>
 
 ---
 
 ## Возможности
 
-- Загрузка зон карты из скачиваемого пакета `zone_pack_png`
+- Загрузка зон карты из `assets/maps/zone_pack_png`
 - Включение только нужных регионов вместо загрузки всей карты сразу
 - Загрузка и сохранение `waypoints.cfg`
 - Создание, перемещение, удаление, переименование, смена цвета и иконки вейпоинтов
@@ -52,9 +63,8 @@ py -3 -m pip install -r requirements.txt
 ### Вариант 1: Запуск готового `.exe`
 
 - Откройте страницу `Releases` репозитория
-- Скачайте `Waypoint-Editor.exe` из ассетов последнего релиза
+- Скачайте `Stalcraft-Waypoint-Editor.exe` из ассетов последнего релиза
 - Запустите исполняемый файл
-- При первом запуске скачайте пакет карт, когда программа предложит это сделать
 
 ### Вариант 2: Запуск из исходного кода
 
@@ -72,7 +82,6 @@ py .\PyGUI\main.py
 
 1. Язык интерфейса
 2. Путь к папке `EXBO`
-3. Скачивание пакета карт, если локальный пакет не найден
 
 Пример пути:
 
@@ -103,12 +112,6 @@ C:\Users\<YourUser>\AppData\Roaming\EXBO
 
 Эти файлы привязаны к текущему пользователю, не хранятся рядом с исполняемым файлом и обычно не должны добавляться в репозиторий.
 
-Готовый `.exe` не содержит изображения карт внутри. Если карты отсутствуют, приложение скачивает `zone_pack_png.zip` из последнего GitHub Release и распаковывает его сюда:
-
-```text
-%APPDATA%\Stalcraft-Waypoint-Editor\assets\maps\zone_pack_png
-```
-
 ---
 
 ## Горячие клавиши
@@ -132,7 +135,7 @@ C:\Users\<YourUser>\AppData\Roaming\EXBO
 - `PyGUI/layers_mixin.py` — система слоёв
 - `PyGUI/i18n.py` — переводы
 - `simplemapper_core.py` — ввод-вывод cfg, поиск ассетов и сканирование карты
-- `assets/maps/zone_pack_png` — исходный пакет зон для упаковки в релиз
+- `assets/maps/zone_pack_png` — набор зон в формате PNG
 - `assets/waypoint_icons` — иконки вейпоинтов
 - `.github/workflows/build-exe.yml` — workflow GitHub Actions для сборки `.exe` под Windows
 - `simplemapper_runtime.spec` — spec-файл PyInstaller для упаковки в один файл
@@ -145,12 +148,7 @@ C:\Users\<YourUser>\AppData\Roaming\EXBO
 
 - Отправьте изменения в ветку `main`
 - Откройте последний запуск `Build Windows EXE` во вкладке `Actions`
-- Скачайте артефакт с `Waypoint-Editor.exe`
-
-Для версионного релиза отправьте тег вроде `v1.2.0`. Workflow прикрепит к GitHub Release оба файла:
-
-- `Waypoint-Editor.exe`
-- `zone_pack_png.zip`
+- Скачайте артефакт с `Stalcraft-Waypoint-Editor.exe`
 
 ---
 

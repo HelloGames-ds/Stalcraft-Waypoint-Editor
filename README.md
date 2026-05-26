@@ -1,26 +1,37 @@
+<div align="center">
+
 # Stalcraft Waypoint Editor
 
-Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint editing, image-to-marker parsing, and layer support.
+🌐 **Available in:** 🇬🇧 **English** | [🇷🇺 Русский](README.ru.md)
 
-This project is focused on local map work: editing `waypoints.cfg`, organizing markers, and placing waypoint shapes from reference images on top of zone packs. The Windows `.exe` is built without bundled map images; maps are distributed as a separate release asset and downloaded on first launch when needed.
+</div>
+
+<img wifth="128" height="128" alt="icon" src="https://github.com/HelloGames-ds/Stalcraft-Waypoint-Editor/blob/main/assets/app.ico" />
+
+---
+
+Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint editing, image-to-marker parsing, and layer support.
 
 ---
 
 ## Screenshots
 
-<img width="632" height="312" alt="Image" src="https://github.com/user-attachments/assets/1af8c97f-be9f-486a-af7c-c7478d5eebe4" />
-
-<img width="1920" height="1017" alt="Image" src="https://github.com/user-attachments/assets/2f3c2438-d8b4-46f2-9606-9145e15e78a3" />
-
-<img width="1920" height="1017" alt="Image" src="https://github.com/user-attachments/assets/3e49643e-7501-45d2-874e-248d64b5aca0" />
-
-<img width="914" height="849" alt="Image" src="https://github.com/user-attachments/assets/29f151f7-c518-4ce6-8734-3dd3b859ea18" />
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/1af8c97f-be9f-486a-af7c-c7478d5eebe4" alt="Image" width="122%"></td>
+    <td><img src="https://github.com/user-attachments/assets/2f3c2438-d8b4-46f2-9606-9145e15e78a3" alt="Image" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/3e49643e-7501-45d2-874e-248d64b5aca0" alt="Image" width="100%"></td>
+    <td><img src="https://github.com/user-attachments/assets/29f151f7-c518-4ce6-8734-3dd3b859ea18" alt="Image" width="100%"></td>
+  </tr>
+</table>
 
 ---
 
 ## Features
 
-- Load map zones from a downloadable `zone_pack_png` map pack
+- Load map zones from `assets/maps/zone_pack_png`
 - Enable only the regions you need instead of loading the whole map at once
 - Load and save `waypoints.cfg`
 - Create, move, delete, rename, recolor, and re-icon waypoints
@@ -52,9 +63,8 @@ py -3 -m pip install -r requirements.txt
 ### Option 1: Run the packaged `.exe`
 
 - Open the repository `Releases` page
-- Download `Waypoint-Editor.exe` from the latest release assets
+- Download `Stalcraft-Waypoint-Editor.exe` from the latest release assets
 - Run the executable
-- On first launch, download the map pack when the app asks for it
 
 ### Option 2: Run from source
 
@@ -72,7 +82,6 @@ On first start the app asks for:
 
 1. Interface language
 2. Path to the `EXBO` folder
-3. Map pack download, if no local map pack is found
 
 Expected folder example:
 
@@ -103,12 +112,6 @@ This includes:
 
 These files are user-local, are not stored next to the executable, and should usually stay out of the repository.
 
-The packaged `.exe` does not bundle map images directly. If maps are missing, the app downloads `zone_pack_png.zip` from the latest GitHub Release and extracts it into:
-
-```text
-%APPDATA%\Stalcraft-Waypoint-Editor\assets\maps\zone_pack_png
-```
-
 ---
 
 ## Hotkeys
@@ -132,7 +135,7 @@ The packaged `.exe` does not bundle map images directly. If maps are missing, th
 - `PyGUI/layers_mixin.py` - layer system
 - `PyGUI/i18n.py` - translations
 - `simplemapper_core.py` - cfg IO, asset discovery, and map scanning
-- `assets/maps/zone_pack_png` - source map pack used for release packaging
+- `assets/maps/zone_pack_png` - zone PNG pack
 - `assets/waypoint_icons` - waypoint icons
 - `.github/workflows/build-exe.yml` - GitHub Actions workflow for Windows `.exe` builds
 - `simplemapper_runtime.spec` - PyInstaller spec for one-file packaging
@@ -145,12 +148,7 @@ The repository is configured to build a standalone Windows `.exe` through GitHub
 
 - Push changes to `main`
 - Open the latest `Build Windows EXE` workflow run in `Actions`
-- Download the artifact containing `Waypoint-Editor.exe`
-
-For versioned releases, push a tag such as `v1.2.0`. The workflow attaches both files to the GitHub Release:
-
-- `Waypoint-Editor.exe`
-- `zone_pack_png.zip`
+- Download the artifact containing `Stalcraft-Waypoint-Editor.exe`
 
 ---
 
