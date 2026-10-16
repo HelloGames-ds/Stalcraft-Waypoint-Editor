@@ -5,9 +5,9 @@
 🌐 **Available in:** 🇬🇧 **English** | [🇷🇺 Русский](README.ru.md)
 
 </div>
-
+<p align="center">
 <img wifth="128" height="128" alt="icon" src="https://github.com/HelloGames-ds/Stalcraft-Waypoint-Editor/blob/main/assets/app.ico" />
-
+</p>
 ---
 
 Desktop waypoint editor for **Stalcraft** with zone-based map loading, waypoint editing, image-to-marker parsing, and layer support.
